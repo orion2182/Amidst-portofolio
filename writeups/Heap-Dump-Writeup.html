@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Heap Dump | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Heap Dump</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Heap Dump</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://verbal-sleep.picoctf.net:61872/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+Welcome to the challenge! In this challenge, you will explore a web application and find an endpoint that exposes a file containing a hidden flag. The application is a simple blog website where you can read articles about various topics, including an article about API Documentation. Your goal is to explore the application and find the endpoint that generates files holding the server's memory, where a secret flag is hidden.</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-explore-the-website">Step 1: Explore the Website</h3>
+<p>The website is a simple blog called "picoCTF News". Looking at the main page, there are navigation links and several blog posts. One post in particular stands out — it mentions <strong>Swagger UI</strong> and links to an <strong>API Documentation</strong> page at <code>/api-docs</code>.</p>
+<pre><code class="language-bash">curl -s http://verbal-sleep.picoctf.net:61872/
+</code></pre>
+<p>Key detail found in the HTML:</p>
+<pre><code class="language-html">&lt;a href=&quot;/api-docs&quot; class=&quot;text-blue-600 hover:underline&quot;&gt;#API Documentation&lt;/a&gt;
+</code></pre>
+<hr />
+<h3 id="step-2-read-the-api-documentation">Step 2: Read the API Documentation</h3>
+<p>Visiting <code>/api-docs/</code> reveals a <strong>Swagger UI</strong> page — an interactive API documentation tool commonly used with Node.js/Express applications. The Swagger spec is embedded in the <code>swagger-ui-init.js</code> file.</p>
+<pre><code class="language-bash">curl -s http://verbal-sleep.picoctf.net:61872/api-docs/swagger-ui-init.js
+</code></pre>
+<p>The API documentation lists these endpoints:</p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/</code></td>
+<td>GET</td>
+<td>Welcome page</td>
+</tr>
+<tr>
+<td><code>/about</code></td>
+<td>GET</td>
+<td>About Us</td>
+</tr>
+<tr>
+<td><code>/services</code></td>
+<td>GET</td>
+<td>Services</td>
+</tr>
+<tr>
+<td><code>/heapdump</code></td>
+<td>GET</td>
+<td>Diagnosing the memory allocation</td>
+</tr>
+<tr>
+<td><code>/api/posts</code></td>
+<td>GET</td>
+<td>Get all posts</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>/heapdump</code> endpoint immediately stands out. In Node.js applications, a <strong>heap dump</strong> is a snapshot of the server's memory. It captures everything currently stored in memory, including variables, strings, objects, and potentially sensitive data like secrets and flags.</p>
+<hr />
+<h3 id="step-3-download-the-heap-dump">Step 3: Download the Heap Dump</h3>
+<pre><code class="language-bash">curl -s http://verbal-sleep.picoctf.net:61872/heapdump -o heapdump
+</code></pre>
+<p>This downloads an 11MB file containing the Node.js V8 engine's heap snapshot.</p>
+<hr />
+<h3 id="step-4-search-for-the-flag">Step 4: Search for the Flag</h3>
+<p>Since a heap dump is a binary file containing all strings in memory, we can use the <code>strings</code> command to extract readable text and then search for the flag format:</p>
+<pre><code class="language-bash">strings heapdump | grep &quot;picoCTF{&quot;
+</code></pre>
+<p><strong>Result:</strong></p>
+<pre><code>picoCTF{Pat!3nt_15_Th3_K3y_dcffa92e}
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{Pat!3nt_15_Th3_K3y_dcffa92e}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Always check for API documentation.</strong> Many web applications expose Swagger UI or similar documentation at common paths like <code>/api-docs</code>, <code>/swagger</code>, or <code>/docs</code>. These can reveal hidden or undocumented endpoints.</p>
+</li>
+<li>
+<p><strong>Debug/diagnostic endpoints are dangerous in production.</strong> The <code>/heapdump</code> endpoint is a real feature used in Node.js debugging (via packages like <code>heapdump</code> or built-in <code>v8.writeHeapSnapshot()</code>). It should <strong>never</strong> be exposed in production, as it dumps the entire server memory — including secrets, credentials, API keys, and in this case, a flag.</p>
+</li>
+<li>
+<p><strong>Use <code>strings</code> and <code>grep</code> for binary analysis.</strong> When you have a binary file that might contain readable text (like heap dumps, memory dumps, or core files), <code>strings</code> is the fastest way to extract and search through all readable content.</p>
+</li>
+<li>
+<p><strong>Explore all available endpoints.</strong> In web CTF challenges, the flag is often behind an endpoint that isn't directly linked from the main page. API documentation, <code>robots.txt</code>, <code>.env</code> files, and common debug paths are always worth checking.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

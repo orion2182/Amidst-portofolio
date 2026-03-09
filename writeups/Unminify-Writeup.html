@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unminify | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Unminify</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Unminify</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://titan.picoctf.net:49241/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+I don't like scrolling down to read the code of my website, so I've squished it. As a bonus, my pages load faster! Browse here, and find the flag!</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-view-the-page-source">Step 1: View the Page Source</h3>
+<p>The website loads normally in the browser — it shows a "Welcome to my flag distribution website!" page. However, the challenge title "Unminify" and the description ("squished it") tell us the HTML source code has been <strong>minified</strong> (compressed into a single line with all whitespace removed).</p>
+<pre><code class="language-bash">curl -s http://titan.picoctf.net:49241/
+</code></pre>
+<p>The entire HTML is one long line:</p>
+<pre><code class="language-html">&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;meta name=&quot;viewport&quot; ...
+</code></pre>
+<hr />
+<h3 id="step-2-unminify-and-read-the-code">Step 2: Unminify and Read the Code</h3>
+<p>To make the code readable, you can:</p>
+<ul>
+<li><strong>Browser:</strong> Right-click → View Page Source, then use Ctrl+F to search</li>
+<li><strong>CLI:</strong> Pipe through a formatter or just grep for the flag</li>
+<li><strong>Online:</strong> Paste into an HTML beautifier</li>
+</ul>
+<p>Or simply search for the flag format directly:</p>
+<pre><code class="language-bash">curl -s http://titan.picoctf.net:49241/ | grep -o 'picoCTF{[^}]*}'
+</code></pre>
+<p><strong>Result:</strong></p>
+<pre><code>picoCTF{pr3tty_c0d3_51d374f0}
+</code></pre>
+<hr />
+<h3 id="step-3-where-was-it-hidden">Step 3: Where Was It Hidden?</h3>
+<p>The flag was embedded as a <strong>CSS class name</strong> on an empty <code>&lt;p&gt;</code> tag. When we prettify the HTML, we can see it clearly:</p>
+<pre><code class="language-html">&lt;p class=&quot;picoCTF{pr3tty_c0d3_51d374f0}&quot;&gt;&lt;/p&gt;
+</code></pre>
+<p>The tag has no text content, so nothing is visible on the rendered page. And because the code is minified into one long line, it's easy to miss when glancing at the source. There are also many decoy <code>class="picoctf{}"</code> (empty, lowercase) attributes scattered throughout the HTML to add noise.</p>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{pr3tty_c0d3_51d374f0}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Minified code is not hidden code.</strong> Minification removes whitespace and formatting to reduce file size and improve load times. It makes the code harder to read but does NOT hide anything — the content is identical. Use any code formatter or beautifier to restore readability.</p>
+</li>
+<li>
+<p><strong>Use search instead of reading line by line.</strong> When source code is minified or very large, searching (<code>Ctrl+F</code> in browser, <code>grep</code> in terminal) is far more efficient than trying to read through it manually.</p>
+</li>
+<li>
+<p><strong>Check HTML attributes, not just text content.</strong> The flag was hidden in a <code>class</code> attribute, not in visible page text. Always inspect the full HTML structure — attributes like <code>class</code>, <code>id</code>, <code>data-*</code>, <code>name</code>, and custom attributes can all contain hidden data.</p>
+</li>
+<li>
+<p><strong>Watch for decoys.</strong> The page had many elements with <code>class="picoctf{}"</code> (empty braces, lowercase). The real flag used <code>picoCTF</code> (mixed case) with actual content inside the braces. Pay attention to subtle differences.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

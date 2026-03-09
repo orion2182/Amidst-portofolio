@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Inspector | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Web Inspector</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Web Inspector</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://titan.picoctf.net:59634/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+Do you know how to use the web inspector? Start searching here to find the flag.</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-explore-the-main-page">Step 1: Explore the Main Page</h3>
+<p>The homepage greets us with "Ha!!!!!! You looking for a flag?" and "Keep Navigating". There is nothing hidden on this page, but the navigation bar has three links:</p>
+<ul>
+<li><strong>Home</strong> (<code>index.html</code>)</li>
+<li><strong>About</strong> (<code>about.html</code>)</li>
+<li><strong>Contact</strong> (<code>contact.html</code>)</li>
+</ul>
+<p>The page is telling us to keep navigating, so let's check the other pages.</p>
+<hr />
+<h3 id="step-2-check-each-page">Step 2: Check Each Page</h3>
+<p><strong>Contact page</strong> (<code>contact.html</code>) — Nothing useful. Just says "Keep searching page. Don't give up!!!"</p>
+<p><strong>About page</strong> (<code>about.html</code>) — The page says "Try inspecting the page!! You might find it there". This is our hint to look at the HTML source code.</p>
+<pre><code class="language-bash">curl -s http://titan.picoctf.net:59634/about.html
+</code></pre>
+<p>Inspecting the source reveals a custom HTML attribute on the <code>&lt;section&gt;</code> tag:</p>
+<pre><code class="language-html">&lt;section class=&quot;about&quot; notify_true=&quot;cGljb0NURnt3ZWJfc3VjYzNzc2Z1bGx5X2QzYzBkZWRfZGYwZGE3Mjd9&quot;&gt;
+</code></pre>
+<p>The attribute <code>notify_true</code> contains a suspicious string that is not visible on the rendered page — you can only see it by inspecting the HTML source or using browser DevTools (right-click → Inspect Element).</p>
+<hr />
+<h3 id="step-3-decode-the-hidden-value">Step 3: Decode the Hidden Value</h3>
+<p>The string <code>cGljb0NURnt3ZWJfc3VjYzNzc2Z1bGx5X2QzYzBkZWRfZGYwZGE3Mjd9</code> is <strong>Base64</strong> encoded. Decode it:</p>
+<pre><code class="language-bash">echo &quot;cGljb0NURnt3ZWJfc3VjYzNzc2Z1bGx5X2QzYzBkZWRfZGYwZGE3Mjd9&quot; | base64 -d
+</code></pre>
+<p><strong>Result:</strong></p>
+<pre><code>picoCTF{web_succ3ssfully_d3c0ded_df0da727}
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{web_succ3ssfully_d3c0ded_df0da727}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Follow the breadcrumbs.</strong> CTF challenges often guide you through hints. The homepage said "Keep Navigating", the about page said "Try inspecting the page" — each clue points you to the next step.</p>
+</li>
+<li>
+<p><strong>Inspect all HTML attributes.</strong> Data can be hidden in custom HTML attributes (like <code>notify_true</code>) that don't affect how the page looks but are fully visible in the source code. Browser DevTools (Elements tab) or "View Page Source" will reveal these.</p>
+</li>
+<li>
+<p><strong>Custom attributes are not secure.</strong> HTML allows any custom attribute on elements. Developers sometimes use these to store data (like <code>data-*</code> attributes), but anything in the HTML is visible to anyone who inspects the page.</p>
+</li>
+<li>
+<p><strong>Check all pages, not just the homepage.</strong> The flag was on the about page, not the main page. Always explore every linked page, and don't forget to check CSS files, JavaScript files, and other linked resources too.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

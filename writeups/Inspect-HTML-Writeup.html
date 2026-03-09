@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inspect HTML | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Inspect HTML</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Inspect HTML</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://saturn.picoctf.net:55374/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+Can you get the flag?</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-view-the-page-source">Step 1: View the Page Source</h3>
+<p>The website displays a short history paragraph about Histiaeus — a historical figure who hid a secret message by tattooing it on a slave's shaved head and waiting for the hair to grow back. This is a thematic hint: the flag is hidden beneath the surface.</p>
+<pre><code class="language-bash">curl -s http://saturn.picoctf.net:55374/
+</code></pre>
+<p>At the very bottom of the HTML source, there's an HTML comment:</p>
+<pre><code class="language-html">&lt;!--picoCTF{1n5p3t0r_0f_h7ml_1fd8425b}--&gt;
+</code></pre>
+<p>HTML comments (<code>&lt;!-- --&gt;</code>) are not rendered by the browser, so they are invisible on the page. But they are fully readable in the source code.</p>
+<hr />
+<h3 id="step-2-thats-it">Step 2: That's It</h3>
+<p>This challenge is straightforward — right-click the page, select "View Page Source" (or press <code>Ctrl+U</code>), and scroll to the bottom to find the flag hidden in a comment.</p>
+<p>Alternatively, search directly with curl and grep:</p>
+<pre><code class="language-bash">curl -s http://saturn.picoctf.net:55374/ | grep -o 'picoCTF{[^}]*}'
+</code></pre>
+<p><strong>Result:</strong></p>
+<pre><code>picoCTF{1n5p3t0r_0f_h7ml_1fd8425b}
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{1n5p3t0r_0f_h7ml_1fd8425b}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Always view the page source.</strong> HTML comments are invisible on the rendered page but fully present in the source code. This is the most basic web reconnaissance technique and should always be your first step.</p>
+</li>
+<li>
+<p><strong>The story is the hint.</strong> Histiaeus hid a message under a slave's hair — just like the flag is hidden under the visible content in an HTML comment. CTF challenges often use thematic clues to point you in the right direction.</p>
+</li>
+<li>
+<p><strong>HTML comments are not private.</strong> Comments in HTML are meant for developers, but they are sent to every visitor's browser. Never put sensitive information (credentials, internal notes, flags) in HTML comments in production applications.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

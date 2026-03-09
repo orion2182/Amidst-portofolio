@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>On Includes | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>On Includes</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>On Includes</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://saturn.picoctf.net:55357/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+Can you get the flag?</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-view-the-page-source">Step 1: View the Page Source</h3>
+<p>The page is about "Include directives" — how programming languages use <code>include</code>, <code>import</code>, or <code>copy</code> to insert contents from other files. This is a thematic hint telling us to check the included files.</p>
+<pre><code class="language-bash">curl -s http://saturn.picoctf.net:55357/
+</code></pre>
+<p>The HTML references two external files:</p>
+<pre><code class="language-html">&lt;link rel=&quot;stylesheet&quot; href=&quot;style.css&quot;&gt;
+&lt;script src=&quot;script.js&quot;&gt;&lt;/script&gt;
+</code></pre>
+<p>The HTML itself contains no flag or comments, so the flag must be in the included files.</p>
+<hr />
+<h3 id="step-2-check-the-css-file">Step 2: Check the CSS File</h3>
+<pre><code class="language-bash">curl -s http://saturn.picoctf.net:55357/style.css
+</code></pre>
+<pre><code class="language-css">body {
+  background-color: lightblue;
+}
+
+/*  picoCTF{1nclu51v17y_1of2_  */
+</code></pre>
+<p>The first half of the flag is hidden in a CSS comment at the bottom: <code>picoCTF{1nclu51v17y_1of2_</code></p>
+<p>Note the hint <code>1of2</code> — telling us this is part 1 of 2.</p>
+<hr />
+<h3 id="step-3-check-the-javascript-file">Step 3: Check the JavaScript File</h3>
+<pre><code class="language-bash">curl -s http://saturn.picoctf.net:55357/script.js
+</code></pre>
+<pre><code class="language-javascript">function greetings() {
+  alert(&quot;This code is in a separate file!&quot;);
+}
+
+//  f7w_2of2_b8f4b022}
+</code></pre>
+<p>The second half is in a JS comment: <code>f7w_2of2_b8f4b022}</code></p>
+<hr />
+<h3 id="step-4-combine-the-parts">Step 4: Combine the Parts</h3>
+<pre><code>Part 1 (CSS):  picoCTF{1nclu51v17y_1of2_
+Part 2 (JS):   f7w_2of2_b8f4b022}
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{1nclu51v17y_1of2_f7w_2of2_b8f4b022}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Check all included files.</strong> A web page is not just the HTML — it loads CSS stylesheets, JavaScript files, images, fonts, and more. Each of these files can contain hidden information. Always inspect every resource referenced in the HTML.</p>
+</li>
+<li>
+<p><strong>Comments exist in every language.</strong> HTML uses <code>&lt;!-- --&gt;</code>, CSS uses <code>/* */</code>, and JavaScript uses <code>//</code> or <code>/* */</code>. Each file type has its own comment syntax, and each is a potential hiding spot for flags.</p>
+</li>
+<li>
+<p><strong>The theme is the hint.</strong> The page is literally about "include directives" — how files reference other files. The challenge is telling you to look at the files that are included by the HTML page.</p>
+</li>
+<li>
+<p><strong>Flags can be split across files.</strong> Don't assume the flag is in one place. The <code>1of2</code> and <code>2of2</code> labels make it obvious here, but in harder challenges, fragments could be scattered without such hints.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

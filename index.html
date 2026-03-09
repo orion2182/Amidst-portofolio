@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amidst | Cybersecurity Portfolio</title>
+  <link rel="icon" type="image/png" href="assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#home" class="nav-logo">
+        <img src="assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#certifications">Certs</a></li>
+        <li><a href="#ctf">CTF</a></li>
+        <li><a href="#bugbounty">Bug Bounty</a></li>
+        <li><a href="#labs">Labs</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="hero-bg">
+      <img src="assets/hero-bg.jpeg" alt="" loading="eager">
+    </div>
+    <div class="hero-lines">
+      <div class="line line-1"></div>
+      <div class="line line-2"></div>
+      <div class="line line-3"></div>
+      <div class="line line-4"></div>
+      <div class="line line-5"></div>
+    </div>
+    <div class="hero-content">
+      <p class="hero-greeting">Hello, I'm</p>
+      <h1 class="hero-name glitch" data-text="Amidst">Amidst</h1>
+      <p class="hero-realname">Alwi Putra Supendi</p>
+      <div class="hero-typing">
+        <span class="typing-prefix">&gt;&nbsp;</span>
+        <span class="typing-text" id="typingText"></span>
+        <span class="typing-cursor">|</span>
+      </div>
+      <div class="hero-buttons">
+        <a href="#about" class="btn btn-primary">Explore</a>
+        <a href="#contact" class="btn btn-outline">Contact Me</a>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <div class="mouse">
+        <div class="wheel"></div>
+      </div>
+      <p>Scroll Down</p>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="section" id="about">
+    <div class="container">
+      <h2 class="section-title"><span class="title-accent">//</span> About Me</h2>
+      <div class="about-grid">
+        <div class="about-avatar-wrapper">
+          <div class="about-avatar">
+            <img src="assets/kafka-character.jpg" alt="Avatar">
+          </div>
+        </div>
+        <div class="about-text">
+          <p class="about-intro">Cybersecurity Researcher & Red Team Practitioner dedicated to bridging academic knowledge with real-world offensive security operations.</p>
+          <p>Passionate about vulnerability research, CTF competitions, and developing hands-on red team infrastructure. Currently focused on advancing both the theoretical and practical aspects of cybersecurity through continuous learning, lab development, and active participation in the security community.</p>
+          <div class="about-stats">
+            <div class="stat">
+              <span class="stat-number" data-count="3">0</span>
+              <span class="stat-label">Certifications</span>
+            </div>
+            <div class="stat">
+              <span class="stat-number" data-count="11">0</span>
+              <span class="stat-label">CTF Write-ups</span>
+            </div>
+            <div class="stat">
+              <span class="stat-number" data-count="0">0</span>
+              <span class="stat-label">Bugs Found</span>
+            </div>
+          </div>
+        </div>
+        <div class="about-card">
+          <div class="terminal">
+            <div class="terminal-header">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">about.sh</span>
+            </div>
+            <div class="terminal-body">
+              <p><span class="prompt">$</span> cat /etc/profile</p>
+              <p><span class="key">Name:</span> Alwi Putra Supendi</p>
+              <p><span class="key">Alias:</span> Amidst</p>
+              <p><span class="key">Role:</span> Cybersecurity Engineer</p>
+              <p><span class="key">Focus:</span> Offensive Security</p>
+              <p><span class="key">Status:</span> <span class="value-green">Active</span></p>
+              <p>&nbsp;</p>
+              <p><span class="prompt">$</span> <span class="typing-cursor-terminal">_</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills Section -->
+  <section class="section section-alt" id="skills">
+    <div class="container">
+      <h2 class="section-title"><span class="title-accent">//</span> Skills & Tools</h2>
+      <div class="skills-grid">
+        <!-- Offensive Security -->
+        <div class="skill-category">
+          <div class="skill-category-header">
+            <i class="fas fa-crosshairs"></i>
+            <h3>Offensive Security</h3>
+          </div>
+          <div class="skill-tags">
+            <span class="tag">Metasploit</span>
+            <span class="tag">Cobalt Strike</span>
+            <span class="tag">Burp Suite</span>
+            <span class="tag">Nmap</span>
+            <span class="tag">BloodHound</span>
+            <span class="tag">Mimikatz</span>
+            <span class="tag">CrackMapExec</span>
+            <span class="tag">Impacket</span>
+            <span class="tag">Responder</span>
+            <span class="tag">SQLMap</span>
+          </div>
+        </div>
+        <!-- Recon & OSINT -->
+        <div class="skill-category">
+          <div class="skill-category-header">
+            <i class="fas fa-search"></i>
+            <h3>Recon & OSINT</h3>
+          </div>
+          <div class="skill-tags">
+            <span class="tag">Subfinder</span>
+            <span class="tag">Amass</span>
+            <span class="tag">FFuF</span>
+            <span class="tag">Gobuster</span>
+            <span class="tag">Nuclei</span>
+            <span class="tag">theHarvester</span>
+            <span class="tag">Shodan</span>
+          </div>
+        </div>
+        <!-- Forensics & Analysis -->
+        <div class="skill-category">
+          <div class="skill-category-header">
+            <i class="fas fa-microscope"></i>
+            <h3>Forensics & Analysis</h3>
+          </div>
+          <div class="skill-tags">
+            <span class="tag">Wireshark</span>
+            <span class="tag">Volatility</span>
+            <span class="tag">Autopsy</span>
+            <span class="tag">FTK Imager</span>
+            <span class="tag">YARA</span>
+            <span class="tag">CyberChef</span>
+          </div>
+        </div>
+        <!-- Automation & DevOps -->
+        <div class="skill-category">
+          <div class="skill-category-header">
+            <i class="fas fa-cogs"></i>
+            <h3>Automation & DevOps</h3>
+          </div>
+          <div class="skill-tags">
+            <span class="tag">n8n</span>
+            <span class="tag">Docker</span>
+            <span class="tag">Kubernetes</span>
+            <span class="tag">Terraform</span>
+            <span class="tag">Ansible</span>
+            <span class="tag">CI/CD</span>
+            <span class="tag">GitHub Actions</span>
+          </div>
+        </div>
+        <!-- Programming -->
+        <div class="skill-category">
+          <div class="skill-category-header">
+            <i class="fas fa-code"></i>
+            <h3>Programming</h3>
+          </div>
+          <div class="skill-tags">
+            <span class="tag">Python</span>
+            <span class="tag">Bash</span>
+            <span class="tag">PowerShell</span>
+            <span class="tag">Go</span>
+            <span class="tag">JavaScript</span>
+            <span class="tag">SQL</span>
+          </div>
+        </div>
+        <!-- Cloud -->
+        <div class="skill-category">
+          <div class="skill-category-header">
+            <i class="fas fa-cloud"></i>
+            <h3>Cloud Platforms</h3>
+          </div>
+          <div class="skill-tags">
+            <span class="tag">AWS</span>
+            <span class="tag">Azure</span>
+            <span class="tag">GCP</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Certifications Section -->
+  <section class="section" id="certifications">
+    <div class="container">
+      <h2 class="section-title"><span class="title-accent">//</span> Certifications</h2>
+      <div class="cert-grid">
+        <!-- Achieved -->
+        <div class="cert-column">
+          <h3 class="cert-subtitle"><i class="fas fa-certificate"></i> Achieved</h3>
+          <div class="cert-card achieved">
+            <div class="cert-badge"><i class="fas fa-shield-halved"></i></div>
+            <div class="cert-info">
+              <h4>CompTIA Pentest+</h4>
+              <p>CompTIA</p>
+              <span class="cert-year">2022</span>
+            </div>
+          </div>
+          <div class="cert-card achieved">
+            <div class="cert-badge"><i class="fas fa-cloud-bolt"></i></div>
+            <div class="cert-info">
+              <h4>MCBTA</h4>
+              <p>Multi Cloud Blue Team Analyst &mdash; CyberWarFare Labs</p>
+            </div>
+          </div>
+          <div class="cert-card achieved">
+            <div class="cert-badge"><i class="fas fa-cloud-bolt"></i></div>
+            <div class="cert-info">
+              <h4>MCRTA</h4>
+              <p>Multi Cloud Red Team Analyst &mdash; CyberWarFare Labs</p>
+            </div>
+          </div>
+        </div>
+        <!-- Pursuing -->
+        <div class="cert-column">
+          <h3 class="cert-subtitle"><i class="fas fa-crosshairs"></i> Pursuing</h3>
+          <div class="cert-card pursuing">
+            <div class="cert-badge"><i class="fas fa-skull-crossbones"></i></div>
+            <div class="cert-info">
+              <h4>OSCP</h4>
+              <p>Offensive Security Certified Professional</p>
+            </div>
+          </div>
+          <div class="cert-card pursuing">
+            <div class="cert-badge"><i class="fas fa-user-secret"></i></div>
+            <div class="cert-info">
+              <h4>CEH</h4>
+              <p>Certified Ethical Hacker</p>
+            </div>
+          </div>
+          <div class="cert-card pursuing">
+            <div class="cert-badge"><i class="fas fa-bug"></i></div>
+            <div class="cert-info">
+              <h4>CPTS</h4>
+              <p>Certified Penetration Testing Specialist &mdash; HTB</p>
+            </div>
+          </div>
+          <div class="cert-card pursuing">
+            <div class="cert-badge"><i class="fas fa-globe"></i></div>
+            <div class="cert-info">
+              <h4>CWES</h4>
+              <p>Certified Web Exploitation Specialist</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTF Write-ups Section -->
+  <section class="section section-alt" id="ctf">
+    <div class="container">
+      <h2 class="section-title"><span class="title-accent">//</span> CTF Write-ups</h2>
+      <div class="ctf-filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="web">Web Exploitation</button>
+        <button class="filter-btn" data-filter="crypto">Cryptography</button>
+        <button class="filter-btn" data-filter="forensics">Forensics</button>
+        <button class="filter-btn" data-filter="reverse">Reverse Engineering</button>
+        <button class="filter-btn" data-filter="pwn">Binary Exploitation</button>
+        <button class="filter-btn" data-filter="osint">OSINT</button>
+        <button class="filter-btn" data-filter="misc">Misc</button>
+      </div>
+      <div class="ctf-grid" id="ctfGrid">
+        <!-- SSTI 1 -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">SSTI 1</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Jinja2 Server-Side Template Injection leading to RCE via lipsum.__globals__ exploit chain.</p>
+          <a href="writeups/SSTI1-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- OTP Bypass -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">OTP Bypass</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Decoding Flask session cookie to extract OTP value stored in plaintext, bypassing 2FA entirely.</p>
+          <a href="writeups/OTP-Bypass-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Heap Dump -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Heap Dump</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Discovering Swagger API docs exposing a /heapdump endpoint, then extracting the flag from Node.js memory.</p>
+          <a href="writeups/Heap-Dump-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Crack the Gate 1 -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Crack the Gate 1</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">ROT13-encoded HTML comment reveals a developer backdoor via custom X-Dev-Access HTTP header.</p>
+          <a href="writeups/Crack-the-Gate-1-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Client-Side Authentication -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Client-Side Authentication</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Login portal with all authentication logic in client-side JavaScript, exposing hardcoded credentials.</p>
+          <a href="writeups/Client-Side-Authentication-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Cookie Monster Secret Recipe -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Cookie Monster Secret Recipe</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Server leaks a URL-encoded Base64 string in the Set-Cookie header containing the flag.</p>
+          <a href="writeups/Cookie-Monster-Secret-Recipe-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Bookmarklet -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Bookmarklet</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">JavaScript bookmarklet that decrypts an encrypted flag using a Vigenere-like cipher with a known key.</p>
+          <a href="writeups/Bookmarklet-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- On Includes -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">On Includes</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Flag split across two included files &mdash; hidden in CSS and JavaScript comments.</p>
+          <a href="writeups/On-Includes-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Inspect HTML -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Inspect HTML</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Flag hidden in an HTML comment at the bottom of the page source code.</p>
+          <a href="writeups/Inspect-HTML-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Unminify -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Unminify</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Flag disguised as a CSS class name in minified HTML, surrounded by decoy empty class attributes.</p>
+          <a href="writeups/Unminify-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Web Inspector -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Web Inspector</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Base64-encoded flag hidden in a custom HTML attribute on the about page.</p>
+          <a href="writeups/Web-Inspector-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+      <div class="ctf-empty" id="ctfEmpty" style="display:none;">
+        <i class="fas fa-flag"></i>
+        <p>No write-ups in this category yet. Stay tuned!</p>
+      </div>
+      <p class="section-note">Write-ups will be added as challenges are completed.</p>
+    </div>
+  </section>
+
+  <!-- Bug Bounty Section -->
+  <section class="section" id="bugbounty">
+    <div class="container">
+      <h2 class="section-title"><span class="title-accent">//</span> Bug Bounty</h2>
+      <div class="bounty-placeholder">
+        <div class="bounty-icon">
+          <i class="fas fa-bug"></i>
+        </div>
+        <h3>Hunting in Progress</h3>
+        <p>Bug bounty findings will be disclosed here responsibly. Currently hunting for vulnerabilities across various platforms.</p>
+        <div class="bounty-stats">
+          <div class="bounty-stat">
+            <span class="bounty-stat-number">0</span>
+            <span class="bounty-stat-label">Bugs Reported</span>
+          </div>
+          <div class="bounty-stat">
+            <span class="bounty-stat-number">0</span>
+            <span class="bounty-stat-label">Hall of Fame</span>
+          </div>
+          <div class="bounty-stat">
+            <span class="bounty-stat-number">--</span>
+            <span class="bounty-stat-label">Highest Severity</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Red Team Labs Section -->
+  <section class="section section-alt" id="labs">
+    <div class="container">
+      <h2 class="section-title"><span class="title-accent">//</span> Red Team Labs</h2>
+      <p class="section-subtitle">Custom-built labs for offensive security training and research.</p>
+      <div class="labs-grid">
+        <div class="lab-card">
+          <div class="lab-icon"><i class="fas fa-network-wired"></i></div>
+          <h4>Active Directory Lab</h4>
+          <p>Full AD environment for practicing lateral movement, privilege escalation, and domain compromise techniques.</p>
+          <div class="lab-tags">
+            <span>AD</span>
+            <span>Kerberos</span>
+            <span>LDAP</span>
+          </div>
+          <a href="#" class="lab-link"><i class="fab fa-github"></i> View on GitHub</a>
+        </div>
+        <div class="lab-card">
+          <div class="lab-icon"><i class="fas fa-cloud"></i></div>
+          <h4>Cloud Attack Lab</h4>
+          <p>Multi-cloud environment simulating misconfigurations and attack paths across AWS, Azure, and GCP.</p>
+          <div class="lab-tags">
+            <span>AWS</span>
+            <span>Azure</span>
+            <span>GCP</span>
+          </div>
+          <a href="#" class="lab-link"><i class="fab fa-github"></i> View on GitHub</a>
+        </div>
+        <div class="lab-card">
+          <div class="lab-icon"><i class="fas fa-spider"></i></div>
+          <h4>C2 Infrastructure Lab</h4>
+          <p>Command and control infrastructure setup for red team operations training and evasion techniques.</p>
+          <div class="lab-tags">
+            <span>C2</span>
+            <span>Evasion</span>
+            <span>Infrastructure</span>
+          </div>
+          <a href="#" class="lab-link"><i class="fab fa-github"></i> View on GitHub</a>
+        </div>
+      </div>
+      <p class="section-note">Labs are continuously being developed and updated. Check back for new additions.</p>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="section" id="contact">
+    <div class="container">
+      <h2 class="section-title"><span class="title-accent">//</span> Get In Touch</h2>
+      <div class="contact-content">
+        <p class="contact-text">Interested in collaboration, CTF teaming, or just want to talk security? Feel free to reach out.</p>
+        <div class="contact-links">
+          <a href="https://github.com/orion2182" target="_blank" class="contact-card">
+            <i class="fab fa-github"></i>
+            <span>GitHub</span>
+            <span class="contact-handle">@orion2182</span>
+          </a>
+          <a href="https://www.linkedin.com/in/alwips/" target="_blank" class="contact-card">
+            <i class="fab fa-linkedin"></i>
+            <span>LinkedIn</span>
+            <span class="contact-handle">Alwi Putra Supendi</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

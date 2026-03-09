@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookmarklet | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Bookmarklet</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Bookmarklet</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://titan.picoctf.net:60594/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+Why search for the flag when I can make a bookmarklet to print it for me? Browse here, and find the flag!</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-view-the-page-source">Step 1: View the Page Source</h3>
+<p>The website shows a "Welcome to my flag distribution website!" page with a textarea containing a JavaScript bookmarklet. Viewing the source:</p>
+<pre><code class="language-bash">curl -s http://titan.picoctf.net:60594/
+</code></pre>
+<p>Inside the page, there's a <code>&lt;textarea&gt;</code> with this JavaScript code:</p>
+<pre><code class="language-javascript">javascript:(function() {
+    var encryptedFlag = &quot;àÒÆÞ¦È¬ëÙ£ÖÓÚåÛÑ¢ÕÓÔÅÐÙí&quot;;
+    var key = &quot;picoctf&quot;;
+    var decryptedFlag = &quot;&quot;;
+    for (var i = 0; i &lt; encryptedFlag.length; i++) {
+        decryptedFlag += String.fromCharCode(
+            (encryptedFlag.charCodeAt(i) - key.charCodeAt(i % key.length) + 256) % 256
+        );
+    }
+    alert(decryptedFlag);
+})();
+</code></pre>
+<hr />
+<h3 id="step-2-understand-the-decryption-logic">Step 2: Understand the Decryption Logic</h3>
+<p>The bookmarklet performs a simple character-by-character decryption:</p>
+<ol>
+<li>It takes each character of <code>encryptedFlag</code></li>
+<li>Subtracts the corresponding character of the <code>key</code> (cycling through <code>"picoctf"</code>)</li>
+<li>Adds 256 and takes modulo 256 to handle wraparound</li>
+<li>Converts the result back to a character</li>
+</ol>
+<p>This is essentially a <strong>Vigenère cipher</strong> variant operating on character codes.</p>
+<hr />
+<h3 id="step-3-run-the-decryption">Step 3: Run the Decryption</h3>
+<p>You can get the flag in multiple ways:</p>
+<p><strong>Option A: Browser console</strong></p>
+<p>Open browser DevTools (F12), go to Console, and paste the JavaScript code.</p>
+<p><strong>Option B: Browser bookmarklet</strong></p>
+<p>Copy the code from the textarea, create a new bookmark, and paste it as the URL. Click the bookmark to trigger the alert.</p>
+<p><strong>Option C: Python script</strong></p>
+<p>The important detail is to read the encrypted string directly from the HTML to preserve the correct byte encoding:</p>
+<pre><code class="language-python">import re, urllib.request
+
+html = urllib.request.urlopen(&quot;http://titan.picoctf.net:60594/&quot;).read().decode()
+enc = re.search(r'var encryptedFlag = &quot;(.*?)&quot;', html).group(1)
+key = &quot;picoctf&quot;
+flag = &quot;&quot;
+for i in range(len(enc)):
+    flag += chr((ord(enc[i]) - ord(key[i % len(key)]) + 256) % 256)
+print(flag)
+</code></pre>
+<p><strong>Result:</strong></p>
+<pre><code>picoCTF{p@g3_turn3r_1d1ba7e0}
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{p@g3_turn3r_1d1ba7e0}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Read the code before running it.</strong> The bookmarklet contained the entire decryption logic in plain sight. Understanding what code does before executing it is a core skill in both CTF and real-world security.</p>
+</li>
+<li>
+<p><strong>Bookmarklets are just JavaScript.</strong> A bookmarklet is a small piece of JavaScript saved as a browser bookmark. It runs in the context of the current page. The <code>javascript:</code> prefix tells the browser to execute the code instead of navigating to a URL.</p>
+</li>
+<li>
+<p><strong>Encoding matters.</strong> The encrypted flag uses non-ASCII characters (like <code>à</code>, <code>Ò</code>, <code>Æ</code>). When working with these, character encoding (UTF-8, Latin-1, etc.) can affect the result. The safest approach is to extract the string directly from the original HTML source rather than copy-pasting it, which may alter the encoding.</p>
+</li>
+<li>
+<p><strong>Simple ciphers are easy to reverse.</strong> The decryption here is a subtraction cipher with a repeating key — essentially a Vigenère cipher. Since the key and the algorithm are both provided, no actual "cracking" is needed. In real-world security, never rely on obscurity for encryption.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

