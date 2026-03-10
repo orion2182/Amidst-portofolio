@@ -128,30 +128,32 @@
 /* Tables */
 .writeup-content table {
   width: 100%;
-  border-collapse: collapse;
-  margin: 20px 0;
-  background: rgba(13, 7, 17, 0.5);
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 25px 0;
+  background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
 .writeup-content thead th {
-  background: rgba(233, 78, 207, 0.1);
+  background: rgba(233, 78, 207, 0.12);
   color: var(--accent-primary);
   font-family: var(--font-mono);
   font-size: 0.85rem;
   font-weight: 600;
   text-align: left;
-  padding: 12px 18px;
+  padding: 14px 24px;
   border-bottom: 1px solid var(--card-border);
 }
 
 .writeup-content tbody td {
-  padding: 10px 18px;
+  padding: 12px 24px;
   border-bottom: 1px solid rgba(155, 89, 182, 0.1);
   font-size: 0.9rem;
-  vertical-align: top;
+  vertical-align: middle;
+  line-height: 1.5;
 }
 
 .writeup-content tbody tr:last-child td {
@@ -159,15 +161,21 @@
 }
 
 .writeup-content tbody tr:hover {
-  background: rgba(233, 78, 207, 0.03);
+  background: rgba(233, 78, 207, 0.05);
 }
 
 .writeup-content tbody td:first-child {
-  color: var(--text-muted);
+  color: var(--accent-secondary);
   font-family: var(--font-mono);
   font-size: 0.85rem;
+  font-weight: 600;
   white-space: nowrap;
-  width: 120px;
+  width: 130px;
+  min-width: 130px;
+}
+
+.writeup-content tbody td:last-child {
+  color: var(--text-primary);
 }
 
 .writeup-content tbody td code {
