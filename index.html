@@ -92,7 +92,7 @@
               <span class="stat-label">Certifications</span>
             </div>
             <div class="stat">
-              <span class="stat-number" data-count="11">0</span>
+              <span class="stat-number" data-count="20">0</span>
               <span class="stat-label">CTF Write-ups</span>
             </div>
             <div class="stat">
@@ -320,6 +320,28 @@
           <p class="ctf-desc">Jinja2 Server-Side Template Injection leading to RCE via lipsum.__globals__ exploit chain.</p>
           <a href="writeups/SSTI1-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
         </div>
+        <!-- File Upload Bypass -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty medium">Medium</span>
+          </div>
+          <h4 class="ctf-title">File Upload Bypass</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Uploading malicious .htaccess to make Apache execute .png as PHP, then deploying a webshell for RCE.</p>
+          <a href="writeups/File-Upload-Bypass-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Crack the Gate 2 -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty medium">Medium</span>
+          </div>
+          <h4 class="ctf-title">Crack the Gate 2</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Bypassing rate-limiting by spoofing X-Forwarded-For header with a different IP on each brute-force attempt.</p>
+          <a href="writeups/Crack-the-Gate-2-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
         <!-- OTP Bypass -->
         <div class="ctf-card" data-category="web">
           <div class="ctf-card-header">
@@ -429,6 +451,83 @@
           <p class="ctf-event">picoCTF</p>
           <p class="ctf-desc">Base64-encoded flag hidden in a custom HTML attribute on the about page.</p>
           <a href="writeups/Web-Inspector-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Factory Login -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Factory Login</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">SQL injection to bypass login, then cookie manipulation changing admin=False to admin=True.</p>
+          <a href="writeups/Factory-Login-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Cookies -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Cookies</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Brute-forcing cookie values (0-18) to find the one that returns the flag.</p>
+          <a href="writeups/Cookies-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Super Secure Portal -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Super Secure Portal</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Client-side JavaScript password verification with scrambled substring checks easily reassembled.</p>
+          <a href="writeups/Super-Secure-Portal-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Get aHEAD -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Get aHEAD</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Sending an HTTP HEAD request reveals the flag in a custom response header.</p>
+          <a href="writeups/Get-Ahead-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Scavenger Hunt -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Scavenger Hunt</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Flag split across 5 locations: HTML, CSS, robots.txt, .htaccess, and .DS_Store with breadcrumb hints.</p>
+          <a href="writeups/Scavenger-Hunt-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Inspect Me -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Inspect Me</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Flag split across three files: HTML comment, CSS comment, and JavaScript comment.</p>
+          <a href="writeups/Inspect-Me-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <!-- Where Are The Robots -->
+        <div class="ctf-card" data-category="web">
+          <div class="ctf-card-header">
+            <span class="ctf-category web">Web Exploitation</span>
+            <span class="ctf-difficulty easy">Easy</span>
+          </div>
+          <h4 class="ctf-title">Where Are The Robots</h4>
+          <p class="ctf-event">picoCTF</p>
+          <p class="ctf-desc">Checking robots.txt to find a Disallow entry pointing to a hidden page with the flag.</p>
+          <a href="writeups/Where-Are-The-Robots-Writeup.html" class="ctf-link">Read Write-up <i class="fas fa-arrow-right"></i></a>
         </div>
       </div>
       <div class="ctf-empty" id="ctfEmpty" style="display:none;">

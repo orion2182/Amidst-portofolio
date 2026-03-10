@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Secure Portal | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Super Secure Portal</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Super Secure Portal</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://fickle-tempest.picoctf.net:60335/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+Can you break into this super secure portal?</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-view-the-page-source">Step 1: View the Page Source</h3>
+<p>The website shows a simple login portal with a password field. Viewing the source:</p>
+<pre><code class="language-bash">curl -s http://fickle-tempest.picoctf.net:60335/
+</code></pre>
+<p>The password verification is done entirely in client-side JavaScript:</p>
+<pre><code class="language-javascript">function verify() {
+    checkpass = document.getElementById(&quot;pass&quot;).value;
+    split = 4;
+    if (checkpass.substring(0, split) == 'pico') {
+      if (checkpass.substring(split*6, split*7) == 'eb02') {
+        if (checkpass.substring(split, split*2) == 'CTF{') {
+         if (checkpass.substring(split*4, split*5) == 'ts_p') {
+          if (checkpass.substring(split*3, split*4) == 'lien') {
+            if (checkpass.substring(split*5, split*6) == 'lz_2') {
+              if (checkpass.substring(split*2, split*3) == 'no_c') {
+                if (checkpass.substring(split*7, split*8) == 'b45}') {
+                  alert(&quot;Password Verified&quot;)
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<hr />
+<h3 id="step-2-reassemble-the-password">Step 2: Reassemble the Password</h3>
+<p>The code splits the password into 4-character chunks (<code>split = 4</code>) and checks each chunk in a scrambled order using nested <code>if</code> statements. We just need to sort them by their index:</p>
+<table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Characters (start:end)</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[0:4]</code></td>
+<td><code>substring(0, 4)</code></td>
+<td><code>pico</code></td>
+</tr>
+<tr>
+<td><code>[4:8]</code></td>
+<td><code>substring(4, 8)</code></td>
+<td><code>CTF{</code></td>
+</tr>
+<tr>
+<td><code>[8:12]</code></td>
+<td><code>substring(8, 12)</code></td>
+<td><code>no_c</code></td>
+</tr>
+<tr>
+<td><code>[12:16]</code></td>
+<td><code>substring(12, 16)</code></td>
+<td><code>lien</code></td>
+</tr>
+<tr>
+<td><code>[16:20]</code></td>
+<td><code>substring(16, 20)</code></td>
+<td><code>ts_p</code></td>
+</tr>
+<tr>
+<td><code>[20:24]</code></td>
+<td><code>substring(20, 24)</code></td>
+<td><code>lz_2</code></td>
+</tr>
+<tr>
+<td><code>[24:28]</code></td>
+<td><code>substring(24, 28)</code></td>
+<td><code>eb02</code></td>
+</tr>
+<tr>
+<td><code>[28:32]</code></td>
+<td><code>substring(28, 32)</code></td>
+<td><code>b45}</code></td>
+</tr>
+</tbody>
+</table>
+<p>Concatenated in order:</p>
+<pre><code>pico + CTF{ + no_c + lien + ts_p + lz_2 + eb02 + b45}
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{no_clients_plz_2eb02b45}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Client-side verification is no verification.</strong> The password check runs in the browser — all the logic and the answer are visible to anyone who reads the source. Authentication must always be done on the server.</p>
+</li>
+<li>
+<p><strong>Scrambled order doesn't add security.</strong> The developer checked the password chunks in a random order (0, 6, 1, 4, 3, 5, 2, 7) hoping to make it confusing. But since each <code>substring()</code> call explicitly states its start and end index, reassembling is trivial.</p>
+</li>
+<li>
+<p><strong>The flag says it all.</strong> <code>no_clients_plz</code> — don't trust the client. Any code running in the browser (JavaScript, WebAssembly, etc.) can be read, modified, and bypassed by the user. This is a fundamental rule of web security.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

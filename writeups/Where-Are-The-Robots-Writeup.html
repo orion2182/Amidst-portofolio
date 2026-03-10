@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Where Are The Robots | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Where Are The Robots</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Where Are The Robots</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://fickle-tempest.picoctf.net:49922/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+Can you find the robots?</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-check-robotstxt">Step 1: Check robots.txt</h3>
+<p>The challenge title mentions "robots" — a direct reference to <code>robots.txt</code>, a standard file that tells search engine crawlers which pages they should or shouldn't index.</p>
+<pre><code class="language-bash">curl -s http://fickle-tempest.picoctf.net:49922/robots.txt
+</code></pre>
+<pre><code>User-agent: *
+Disallow: /cc6b1.html
+</code></pre>
+<p>The file tells all crawlers (<code>*</code>) to not index <code>/cc6b1.html</code>. Ironically, this reveals the existence of a hidden page.</p>
+<hr />
+<h3 id="step-2-visit-the-hidden-page">Step 2: Visit the Hidden Page</h3>
+<pre><code class="language-bash">curl -s http://fickle-tempest.picoctf.net:49922/cc6b1.html
+</code></pre>
+<pre><code class="language-html">&lt;p&gt;Guess you found the robots&lt;br /&gt;
+  &lt;flag&gt;picoCTF{ca1cu1at1ng_Mach1n3s_cc6b1}&lt;/flag&gt;&lt;/p&gt;
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{ca1cu1at1ng_Mach1n3s_cc6b1}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Always check robots.txt.</strong> It's one of the first files to look at when enumerating a web application. It's meant to guide search engines, but it often accidentally reveals hidden directories, admin panels, or sensitive pages.</p>
+</li>
+<li>
+<p><strong>Disallow is not access control.</strong> The <code>Disallow</code> directive is a polite request to crawlers — it does NOT prevent anyone from accessing the page. Legitimate search engines respect it, but humans and malicious bots can visit the URL directly. Never rely on <code>robots.txt</code> for security.</p>
+</li>
+<li>
+<p><strong>robots.txt is a recon goldmine.</strong> In real-world pentesting, <code>robots.txt</code> frequently exposes paths like <code>/admin</code>, <code>/backup</code>, <code>/staging</code>, or internal API endpoints that the developer wanted to hide from search results but forgot to actually protect.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scavenger Hunt | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Scavenger Hunt</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Scavenger Hunt</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://wily-courier.picoctf.net:55537/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+There is some interesting information hidden around this site. Can you find it?</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<p>The flag is split across 5 different files on the web server. Each part includes a hint pointing to the next location.</p>
+<h3 id="part-1-html-source">Part 1: HTML Source</h3>
+<p>View the page source to find an HTML comment:</p>
+<pre><code class="language-bash">curl -s http://wily-courier.picoctf.net:55537/
+</code></pre>
+<pre><code class="language-html">&lt;!-- Here's the first part of the flag: picoCTF{t --&gt;
+</code></pre>
+<p>The page mentions it uses HTML, CSS, and JS — a hint to check those files.</p>
+<p><strong>Part 1:</strong> <code>picoCTF{t</code></p>
+<hr />
+<h3 id="part-2-css-file">Part 2: CSS File</h3>
+<pre><code class="language-bash">curl -s http://wily-courier.picoctf.net:55537/mycss.css
+</code></pre>
+<p>At the bottom of the stylesheet, there's a CSS comment:</p>
+<pre><code class="language-css">/* CSS makes the page look nice, and yes, it also has part of the flag. Here's part 2: h4ts_4_l0 */
+</code></pre>
+<p><strong>Part 2:</strong> <code>h4ts_4_l0</code></p>
+<hr />
+<h3 id="part-3-javascript-file-robotstxt">Part 3: JavaScript File → robots.txt</h3>
+<pre><code class="language-bash">curl -s http://wily-courier.picoctf.net:55537/myjs.js
+</code></pre>
+<p>The JS file has a comment hint:</p>
+<pre><code class="language-javascript">/* How can I keep Google from indexing my website? */
+</code></pre>
+<p>The answer is <code>robots.txt</code> — a file that tells search engine crawlers which pages to ignore.</p>
+<pre><code class="language-bash">curl -s http://wily-courier.picoctf.net:55537/robots.txt
+</code></pre>
+<pre><code>User-agent: *
+Disallow: /index.html
+# Part 3: t_0f_pl4c
+# I think this is an apache server... can you Access the next flag?
+</code></pre>
+<p>The hint says "apache server" and capitalizes "Access" — pointing to <code>.htaccess</code>.</p>
+<p><strong>Part 3:</strong> <code>t_0f_pl4c</code></p>
+<hr />
+<h3 id="part-4-htaccess">Part 4: .htaccess</h3>
+<p><code>.htaccess</code> is an Apache web server configuration file that controls directory-level settings like redirects, access control, and URL rewriting.</p>
+<pre><code class="language-bash">curl -s http://wily-courier.picoctf.net:55537/.htaccess
+</code></pre>
+<pre><code># Part 4: 3s_2_lO0k
+# I love making websites on my Mac, I can Store a lot of information there.
+</code></pre>
+<p>The hint says "Mac" and capitalizes "Store" — pointing to <code>.DS_Store</code>.</p>
+<p><strong>Part 4:</strong> <code>3s_2_lO0k</code></p>
+<hr />
+<h3 id="part-5-ds_store">Part 5: .DS_Store</h3>
+<p><code>.DS_Store</code> (Desktop Services Store) is a hidden file automatically created by macOS in every folder. It stores custom folder attributes like icon positions and view settings. Developers often accidentally upload this file to web servers.</p>
+<pre><code class="language-bash">curl -s http://wily-courier.picoctf.net:55537/.DS_Store
+</code></pre>
+<pre><code>Congrats! You've completed the scavenger hunt! Part 5: _9588550}
+</code></pre>
+<p><strong>Part 5:</strong> <code>_9588550}</code></p>
+<hr />
+<h3 id="combine-all-parts">Combine All Parts</h3>
+<pre><code>Part 1 (HTML comment):  picoCTF{t
+Part 2 (CSS comment):   h4ts_4_l0
+Part 3 (robots.txt):    t_0f_pl4c
+Part 4 (.htaccess):     3s_2_lO0k
+Part 5 (.DS_Store):     _9588550}
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{th4ts_4_l0t_0f_pl4c3s_2_lO0k_9588550}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Check all static files.</strong> A website isn't just its HTML — CSS, JavaScript, images, and other assets can all contain hidden information. Always inspect every file referenced in the HTML.</p>
+</li>
+<li>
+<p><strong>Common hidden files on web servers:</strong></p>
+</li>
+<li><code>robots.txt</code> — Tells search engines what not to index. Often reveals hidden directories or pages.</li>
+<li><code>.htaccess</code> — Apache configuration file. Can contain rewrite rules, credentials, or sensitive comments.</li>
+<li><code>.DS_Store</code> — macOS metadata file. Accidentally uploaded, it can reveal the directory structure of the developer's machine.</li>
+<li><code>.git/</code> — Exposed Git repositories can leak entire source code history.</li>
+<li>
+<p><code>.env</code> — Environment variables, often containing API keys and passwords.</p>
+</li>
+<li>
+<p><strong>Follow the breadcrumbs.</strong> Each hint pointed to the next location. In CTF challenges (and real-world pentesting), one piece of information often leads to the next discovery. Pay close attention to every word — capitalization, phrasing, and context clues all matter.</p>
+</li>
+<li>
+<p><strong>Developers leave traces.</strong> Files like <code>.DS_Store</code> and <code>.htaccess</code> are created automatically and often forgotten during deployment. Always check for these common files when enumerating a web server.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

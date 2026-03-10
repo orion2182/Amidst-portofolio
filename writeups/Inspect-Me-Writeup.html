@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inspect Me | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Inspect Me</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Inspect Me</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://fickle-tempest.picoctf.net:63568/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+Kishor Balan tipped us off that the following code may need inspection.</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-view-the-html-source">Step 1: View the HTML Source</h3>
+<p>The page is titled "Inspect Me" — a direct hint to view the source code. It references two external files: <code>mycss.css</code> and <code>myjs.js</code>.</p>
+<pre><code class="language-bash">curl -s http://fickle-tempest.picoctf.net:63568/
+</code></pre>
+<p>At the bottom of the HTML, there's a comment:</p>
+<pre><code class="language-html">&lt;!-- Html is neat. Anyways have 1/3 of the flag: picoCTF{tru3_d3 --&gt;
+</code></pre>
+<p><strong>Part 1:</strong> <code>picoCTF{tru3_d3</code></p>
+<hr />
+<h3 id="step-2-check-the-css-file">Step 2: Check the CSS File</h3>
+<pre><code class="language-bash">curl -s http://fickle-tempest.picoctf.net:63568/mycss.css
+</code></pre>
+<p>At the bottom of the stylesheet:</p>
+<pre><code class="language-css">/* You need CSS to make pretty pages. Here's part 2/3 of the flag: t3ct1ve_0r_ju5t */
+</code></pre>
+<p><strong>Part 2:</strong> <code>t3ct1ve_0r_ju5t</code></p>
+<hr />
+<h3 id="step-3-check-the-javascript-file">Step 3: Check the JavaScript File</h3>
+<pre><code class="language-bash">curl -s http://fickle-tempest.picoctf.net:63568/myjs.js
+</code></pre>
+<p>At the bottom of the script:</p>
+<pre><code class="language-javascript">/* Javascript sure is neat. Anyways part 3/3 of the flag: _lucky?302945a7} */
+</code></pre>
+<p><strong>Part 3:</strong> <code>_lucky?302945a7}</code></p>
+<hr />
+<h3 id="step-4-combine-all-parts">Step 4: Combine All Parts</h3>
+<pre><code>Part 1 (HTML comment):  picoCTF{tru3_d3
+Part 2 (CSS comment):   t3ct1ve_0r_ju5t
+Part 3 (JS comment):    _lucky?302945a7}
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{tru3_d3t3ct1ve_0r_ju5t_lucky?302945a7}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Inspect all page resources.</strong> A web page is made up of multiple files — HTML, CSS, JavaScript, images, fonts, and more. Each file can contain hidden information in the form of comments or unused code.</p>
+</li>
+<li>
+<p><strong>Comments are visible to everyone.</strong> HTML comments (<code>&lt;!-- --&gt;</code>), CSS comments (<code>/* */</code>), and JavaScript comments (<code>//</code> or <code>/* */</code>) are meant for developers but are sent to every visitor's browser. Never put sensitive information in comments.</p>
+</li>
+<li>
+<p><strong>Browser DevTools make this easy.</strong> You can use the Sources tab in Chrome/Firefox DevTools to browse all loaded files at once, or simply use "View Page Source" and click through the linked CSS and JS files.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

