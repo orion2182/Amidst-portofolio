@@ -53,7 +53,7 @@ export default function RootLayout({
     <html lang="en" className="light">
       <body className={`${spaceGrotesk.variable} ${inter.variable} font-inter overflow-hidden bg-slate-50`}>
         <LangProvider>
-        <BootSequence />
+        {/* <BootSequence /> */}
         <CustomCursor />
         <CommandPalette />
 
