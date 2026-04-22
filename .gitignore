@@ -26,3 +26,12 @@ yarn-error.log*
 
 # agents
 .agents/
+
+# dev logs
+.dev.log
+
+# gemini temp
+.gemini_tmp_unzip/
+
+# build info
+tsconfig.tsbuildinfo

@@ -25,7 +25,7 @@ export default function OSDesktopClient({ data }: { data: ContentData }) {
       <div className="absolute inset-0 z-0 bg-slate-50 overflow-hidden">
         {/* Full resolution Lynae wallpaper, fully visible */}
         <img
-          src="/assets/wallpaper.jpeg"
+          src="/assets/wallpaper.jpg"
           alt="Wallpaper"
           className="absolute inset-0 w-full h-full object-cover transition-all duration-1000"
         />
